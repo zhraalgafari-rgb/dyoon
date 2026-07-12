@@ -1,4 +1,4 @@
-import { notificationService } from "@/lib/notifications";
+import { notificationService } from "@/lib/notifications/index";
 import type { NotifCategory, NotifChannel } from "@/lib/notifications/types";
 
 export async function triggerReminderNotification(userId: string, reminderId: string, title: string, dueDate: string) {

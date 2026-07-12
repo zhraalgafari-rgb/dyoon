@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { triggerOverdueNotification, triggerReminderNotification } from "@/lib/notifications/triggers";
+import { notificationService } from "@/lib/notifications/index";
 
 export interface PendingItem {
   id: string;
@@ -83,3 +84,5 @@ export async function pollAndNotify(userId: string) {
   if (items.length > 0) showLocalNotification("دفترك", `لديك ${items.length} تنبيهاً مستحقاً`);
   localStorage.setItem(POLLED_KEY, String(Date.now()));
 }
+
+export { notificationService };
