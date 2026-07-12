@@ -19,7 +19,7 @@ function advance(d: Date, freq: Freq): Date {
 }
 
 async function runForUser(supabaseAdmin: any, userId: string) {
-  const stats = { reminders: 0, recurring: 0, backup: false as boolean | string };
+  const stats = { reminders: 0, recurring: 0, backup: false as boolean | string, alerts: 0, overdue: 0 };
 
   // --- Reminders sync ---
   const { data: txns } = await supabaseAdmin
@@ -50,6 +50,12 @@ async function runForUser(supabaseAdmin: any, userId: string) {
       if (!error) stats.reminders = toInsert.length;
     }
   }
+
+  // --- Alerts engine: materialize due note/reminder alerts + overdue debts ---
+  const { data: fired } = await supabaseAdmin.rpc("fire_due_alerts");
+  if (typeof fired === "number") stats.alerts = fired;
+  const { data: overdue } = await supabaseAdmin.rpc("sync_overdue_alerts");
+  if (typeof overdue === "number") stats.overdue = overdue;
 
   // --- Recurring rules ---
   const now = new Date();
@@ -156,13 +162,15 @@ export const Route = createFileRoute("/api/public/cron/process")({
           });
         }
         const results: Record<string, any> = {};
-        let totalReminders = 0, totalRecurring = 0, totalBackups = 0;
+        let totalReminders = 0, totalRecurring = 0, totalBackups = 0, totalAlerts = 0, totalOverdue = 0;
         for (const p of profiles ?? []) {
           try {
             const s = await runForUser(supabaseAdmin, p.user_id);
             results[p.user_id] = s;
             totalReminders += s.reminders;
             totalRecurring += s.recurring;
+            totalAlerts += s.alerts ?? 0;
+            totalOverdue += s.overdue ?? 0;
             if (s.backup) totalBackups++;
           } catch (e: any) {
             results[p.user_id] = { error: e?.message ?? "failed" };
@@ -171,7 +179,7 @@ export const Route = createFileRoute("/api/public/cron/process")({
         return new Response(JSON.stringify({
           ok: true,
           users: profiles?.length ?? 0,
-          totals: { reminders: totalReminders, recurring: totalRecurring, backups: totalBackups },
+          totals: { reminders: totalReminders, recurring: totalRecurring, alerts: totalAlerts, overdue: totalOverdue, backups: totalBackups },
           at: new Date().toISOString(),
         }), { headers: { "content-type": "application/json" } });
       },

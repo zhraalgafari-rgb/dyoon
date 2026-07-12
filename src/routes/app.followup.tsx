@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { Bucket, buildBuckets } from "@/lib/money/followup";
 import { FollowupBucketCard } from "@/features/reminders/FollowupBucketCard";
 import { FollowupDraftDialog } from "@/features/reminders/FollowupDraftDialog";
+import { FollowupManager } from "@/features/reminders/FollowupManager";
 import { useActivePeople } from "@/hooks/usePeople";
 import { useCurrencies } from "@/hooks/useCurrencies";
 
@@ -173,6 +174,10 @@ function FollowupPage() {
         onGenerateMessage={genMessage}
         onSendWhatsApp={openWhatsApp}
       />
+
+      {user && (
+        <FollowupManager userId={user.id} people={people} />
+      )}
     </div>
   );
 }

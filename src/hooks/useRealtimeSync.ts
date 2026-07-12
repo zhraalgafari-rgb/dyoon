@@ -11,6 +11,7 @@
  * استخدام: ضعه في مكوّن جذري (AppLayout أو root layout) مرة واحدة فقط.
  */
 import { useEffect, useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useInvalidateAll } from "@/hooks/useInvalidateAll";
 import { useAuth } from "@/lib/auth";
@@ -18,6 +19,7 @@ import { useAuth } from "@/lib/auth";
 export function useRealtimeSync() {
   const { user } = useAuth();
   const invalidateAll = useInvalidateAll();
+  const queryClient = useQueryClient();
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   useEffect(() => {
@@ -70,6 +72,34 @@ export function useRealtimeSync() {
         },
         () => {
           invalidateAll("transaction");
+        }
+      )
+
+      // تغيرات التنبيهات الذكية (تظهر في لوحة الإشعارات والمتابعة معاً)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "smart_alerts",
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["alerts", user!.id] });
+        }
+      )
+
+      // تغيرات سجل المتابعة
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "followup_logs",
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["followupLogs", user!.id] });
         }
       )
 

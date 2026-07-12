@@ -13,6 +13,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppSearchRouteImport } from './routes/app.search'
 import { Route as AppReportsRouteImport } from './routes/app.reports'
@@ -60,6 +61,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AppRoute,
+} as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/callback',
+  path: '/callback',
+  getParentRoute: () => AuthRoute,
 } as any)
 const AppSettingsRoute = AppSettingsRouteImport.update({
   id: '/settings',
@@ -201,7 +207,7 @@ const ApiPublicCronProcessRoute = ApiPublicCronProcessRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
   '/api/chat': typeof ApiChatRoute
   '/app/activity': typeof AppActivityRoute
   '/app/archive': typeof AppArchiveRoute
@@ -219,6 +225,7 @@ export interface FileRoutesByFullPath {
   '/app/reports': typeof AppReportsRoute
   '/app/search': typeof AppSearchRoute
   '/app/settings': typeof AppSettingsRouteWithChildren
+  '/auth/callback': typeof AuthCallbackRoute
   '/app/': typeof AppIndexRoute
   '/app/person/$id': typeof AppPersonIdRoute
   '/app/settings/about': typeof AppSettingsAboutRoute
@@ -233,7 +240,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
   '/api/chat': typeof ApiChatRoute
   '/app/activity': typeof AppActivityRoute
   '/app/archive': typeof AppArchiveRoute
@@ -250,6 +257,7 @@ export interface FileRoutesByTo {
   '/app/reminders': typeof AppRemindersRoute
   '/app/reports': typeof AppReportsRoute
   '/app/search': typeof AppSearchRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/app': typeof AppIndexRoute
   '/app/person/$id': typeof AppPersonIdRoute
   '/app/settings/about': typeof AppSettingsAboutRoute
@@ -266,7 +274,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
   '/api/chat': typeof ApiChatRoute
   '/app/activity': typeof AppActivityRoute
   '/app/archive': typeof AppArchiveRoute
@@ -284,6 +292,7 @@ export interface FileRoutesById {
   '/app/reports': typeof AppReportsRoute
   '/app/search': typeof AppSearchRoute
   '/app/settings': typeof AppSettingsRouteWithChildren
+  '/auth/callback': typeof AuthCallbackRoute
   '/app/': typeof AppIndexRoute
   '/app/person/$id': typeof AppPersonIdRoute
   '/app/settings/about': typeof AppSettingsAboutRoute
@@ -319,6 +328,7 @@ export interface FileRouteTypes {
     | '/app/reports'
     | '/app/search'
     | '/app/settings'
+    | '/auth/callback'
     | '/app/'
     | '/app/person/$id'
     | '/app/settings/about'
@@ -350,6 +360,7 @@ export interface FileRouteTypes {
     | '/app/reminders'
     | '/app/reports'
     | '/app/search'
+    | '/auth/callback'
     | '/app'
     | '/app/person/$id'
     | '/app/settings/about'
@@ -383,6 +394,7 @@ export interface FileRouteTypes {
     | '/app/reports'
     | '/app/search'
     | '/app/settings'
+    | '/auth/callback'
     | '/app/'
     | '/app/person/$id'
     | '/app/settings/about'
@@ -399,7 +411,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
-  AuthRoute: typeof AuthRoute
+  AuthRoute: typeof AuthRouteWithChildren
   ApiChatRoute: typeof ApiChatRoute
   ApiPublicCronProcessRoute: typeof ApiPublicCronProcessRoute
 }
@@ -433,6 +445,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/'
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof AuthRoute
     }
     '/app/settings': {
       id: '/app/settings'
@@ -696,10 +715,20 @@ const AppRouteChildren: AppRouteChildren = {
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
+interface AuthRouteChildren {
+  AuthCallbackRoute: typeof AuthCallbackRoute
+}
+
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthCallbackRoute: AuthCallbackRoute,
+}
+
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
-  AuthRoute: AuthRoute,
+  AuthRoute: AuthRouteWithChildren,
   ApiChatRoute: ApiChatRoute,
   ApiPublicCronProcessRoute: ApiPublicCronProcessRoute,
 }

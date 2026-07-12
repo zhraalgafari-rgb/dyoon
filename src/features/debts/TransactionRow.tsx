@@ -1,9 +1,12 @@
-import React from "react";
-import { TrendingUp, TrendingDown, Pencil, Trash2, CheckCircle2, Clock } from "lucide-react";
+import React, { useState } from "react";
+import { TrendingUp, TrendingDown, Pencil, Trash2, CheckCircle2, Clock, MessageSquareText } from "lucide-react";
 import { fmtMoney, fmtDate, fmtTime } from "@/lib/format";
+import { useAuth } from "@/lib/auth";
+import { TransactionNotesSheet } from "@/features/alerts/TransactionNotesSheet";
 
 interface Tx {
   id: string;
+  person_id?: string | null;
   amount: number;
   direction: string;
   currency_id: string;
@@ -35,6 +38,7 @@ function dueState(due: string | null | undefined, is_paid?: boolean): "none" | "
 }
 
 export const TransactionRow = React.memo(function TransactionRow({ tx, currency, runningBalance, onEdit, onDelete, onPay }: Props) {
+  const [noteOpen, setNoteOpen] = useState(false);
   const credit = tx.direction === "credit";
   const state = dueState(tx.due_date, tx.is_paid);
   
@@ -86,6 +90,9 @@ export const TransactionRow = React.memo(function TransactionRow({ tx, currency,
                   <CheckCircle2 className="size-3" />
                 </button>
               )}
+              <button onClick={() => setNoteOpen(true)} aria-label="ملاحظات" className="text-muted-foreground hover:text-primary p-1">
+                <MessageSquareText className="size-3" />
+              </button>
               <button onClick={onEdit} aria-label="تعديل" className="text-muted-foreground hover:text-primary p-1">
                 <Pencil className="size-3" />
               </button>
@@ -96,6 +103,7 @@ export const TransactionRow = React.memo(function TransactionRow({ tx, currency,
           </div>
         </div>
       </div>
+      <TransactionNotesSheet transactionId={tx.id} personId={tx.person_id} open={noteOpen} onOpenChange={setNoteOpen} />
     </div>
   );
 });
