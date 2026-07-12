@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { triggerOverdueNotification, triggerReminderNotification } from "@/lib/notifications/triggers";
 
 export interface PendingItem {
   id: string;
@@ -10,7 +11,7 @@ export interface PendingItem {
   amount?: number;
 }
 
-/** Fetch unseen reminders + overdue unpaid transactions. */
+/** Fetch unseen reminders + overdue unpaid transactions and emit notifications via the new notification system. */
 export async function fetchPending(_userId: string): Promise<PendingItem[]> {
   const today = new Date(); today.setHours(23, 59, 59, 999);
   const nowIso = today.toISOString();
@@ -34,6 +35,7 @@ export async function fetchPending(_userId: string): Promise<PendingItem[]> {
   for (const r of reminders ?? []) {
     items.push({ id: r.id, kind: "reminder", title: r.title, due_date: r.due_date, person_id: r.person_id, transaction_id: r.transaction_id });
     if (r.transaction_id) linked.add(r.transaction_id);
+    await triggerReminderNotification(_userId, r.id, r.title, r.due_date);
   }
   for (const t of (txns ?? []) as Array<{ id: string; details: string | null; amount: number; due_date: string; person_id: string; people: { name: string } | null }>) {
     if (linked.has(t.id)) continue;
@@ -47,6 +49,7 @@ export async function fetchPending(_userId: string): Promise<PendingItem[]> {
       transaction_id: t.id,
       amount: Number(t.amount) || 0,
     });
+    await triggerOverdueNotification(_userId, t.id, t.details ?? "دين متأخر", Number(t.amount) || 0, t.due_date);
   }
   return items;
 }

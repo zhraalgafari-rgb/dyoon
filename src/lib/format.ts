@@ -22,3 +22,20 @@ export const monthRange = (date = new Date()) => {
   const end = new Date(date.getFullYear(), date.getMonth() + 1, 1, 0, 0, 0);
   return { start, end };
 };
+
+export function formatDistanceToNow(dateStr: string): string {
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffSec = Math.floor(diffMs / 1000);
+  if (diffSec < 60) return "الآن";
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `منذ ${diffMin} دقيقة`;
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `منذ ${diffHr} ساعة`;
+  const diffDay = Math.floor(diffHr / 24);
+  if (diffDay < 7) return `منذ ${diffDay} يوم`;
+  const diffWeek = Math.floor(diffDay / 7);
+  if (diffWeek < 4) return `منذ ${diffWeek} أسبوع`;
+  return fmtDate(dateStr);
+}
