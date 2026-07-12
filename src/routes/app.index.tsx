@@ -40,11 +40,15 @@ function DebtsHome() {
   const [delPerson, setDelPerson] = useState<Person | null>(null);
   const [archivePerson, setArchivePerson] = useState<Person | null>(null);
 
-  const [view, setView] = useState<ViewMode>(
-    () =>
-      (typeof localStorage !== "undefined" && (localStorage.getItem("people_view") as ViewMode)) ||
-      "cards",
-  );
+  const [view, setView] = useState<ViewMode>("cards");
+
+  useEffect(() => {
+    if (typeof localStorage !== "undefined") {
+      const v = localStorage.getItem("people_view") as ViewMode;
+      if (v) setView(v);
+    }
+  }, []);
+
   useEffect(() => {
     try {
       localStorage.setItem("people_view", view);

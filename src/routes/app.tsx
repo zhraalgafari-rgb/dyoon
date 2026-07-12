@@ -53,11 +53,16 @@ function AppLayout() {
   // تحديث فوري لجميع أجزاء التطبيق عند أي تغيير في قاعدة البيانات
   useRealtimeSync();
 
-  const isDark =
-    theme === "dark" ||
-    (theme === "system" &&
-      typeof window !== "undefined" &&
-      window.matchMedia?.("(prefers-color-scheme: dark)").matches);
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const dark =
+      theme === "dark" ||
+      (theme === "system" &&
+        typeof window !== "undefined" &&
+        window.matchMedia?.("(prefers-color-scheme: dark)").matches);
+    setIsDark(dark);
+  }, [theme]);
 
   useEffect(() => {
     if (!swRegistered) {

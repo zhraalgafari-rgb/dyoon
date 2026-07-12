@@ -10,12 +10,13 @@ function applyTheme(t: Theme) {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("light");
+  // Start with "system" on both server and client to avoid hydration mismatch.
+  // localStorage is read in an effect (client-only) after hydration.
+  const [theme, setTheme] = useState<Theme>("system");
 
   useEffect(() => {
-    const stored = (typeof window !== "undefined" && localStorage.getItem("theme")) as Theme | null;
-    const initial: Theme = stored ?? "system";
-    setTheme(initial);
+    const stored = localStorage.getItem("theme") as Theme | null;
+    if (stored) setTheme(stored);
   }, []);
 
   useEffect(() => {

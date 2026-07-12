@@ -27,7 +27,13 @@ export function PinLockGate({ children }: { children: React.ReactNode }) {
   const [pinHash, setPinHash] = useState<string | null>(null);
   const [unlocked, setUnlocked] = useState(true);
   const [pin, setPin] = useState("");
-  const [attempts, setAttempts] = useState(() => typeof window !== "undefined" ? Number(localStorage.getItem(ATTEMPTS_KEY) ?? "0") || 0 : 0);
+  const [attempts, setAttempts] = useState(0);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setAttempts(Number(localStorage.getItem(ATTEMPTS_KEY) ?? "0") || 0);
+    }
+  }, []);
   const [waitMs, setWaitMs] = useState(0);
   const [checking, setChecking] = useState(true);
   const autolockMin = useRef(5);
@@ -148,7 +154,10 @@ export function PinLockGate({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const bioOn = biometricEnabled();
+  const [bioOn, setBioOn] = useState(false);
+  useEffect(() => {
+    setBioOn(biometricEnabled());
+  }, []);
 
   if (checking || unlocked || !pinHash || !user) return <>{children}</>;
 
