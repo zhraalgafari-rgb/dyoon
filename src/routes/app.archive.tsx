@@ -1,0 +1,88 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { ArrowRight, ArchiveRestore, Trash2, Archive } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/EmptyState";
+import { toast } from "sonner";
+import { useAuth } from "@/lib/auth";
+import { useInvalidateAll } from "@/hooks/useInvalidateAll";
+import { supabase } from "@/integrations/supabase/client";
+
+export const Route = createFileRoute("/app/archive")({ component: ArchivePage });
+
+interface Person { id: string; name: string }
+
+function ArchivePage() {
+  const { user } = useAuth();
+  const invalidateAll = useInvalidateAll();
+
+  const { data: items = [], isLoading } = useQuery({
+    queryKey: ["archivedPeople", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("people").select("id,name").eq("is_archived", true).order("name");
+      return (data ?? []) as Person[];
+    },
+    enabled: !!user,
+  });
+
+  const restore = async (id: string) => {
+    if (!user) return;
+    await supabase.from("people").update({ is_archived: false }).eq("id", id);
+    const { logAudit } = await import("@/lib/audit");
+    const person = items.find((p) => p.id === id);
+    await logAudit(user.id, "restore", "person", id, { name: person?.name });
+    toast.success("تمت الاستعادة");
+    await invalidateAll("person");
+  };
+
+  const del = async (id: string, name: string) => {
+    if (!user) return;
+    if (!confirm(`حذف ${name} نهائياً؟ سيتم حذف كل معاملاته.`)) return;
+    if (!confirm(`تأكيد نهائي: حذف ${name} وكل بياناته؟`)) return;
+    await supabase.from("transactions").delete().eq("person_id", id);
+    const { error } = await supabase.from("people").delete().eq("id", id);
+    if (error) return toast.error(error.message);
+    const { logAudit } = await import("@/lib/audit");
+    await logAudit(user.id, "delete", "person", id, { name, from_archive: true });
+    toast.success("تم الحذف");
+    await invalidateAll("person");
+  };
+
+  return (
+    <div className="space-y-4">
+      <Link to="/app" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+        <ArrowRight className="size-4" /> الرئيسية
+      </Link>
+      <div className="flex items-center gap-2">
+        <div className="size-10 rounded-xl bg-gradient-primary text-primary-foreground flex items-center justify-center shadow-glow">
+          <Archive className="size-5" />
+        </div>
+        <div>
+          <h1 className="font-bold text-lg leading-tight">الأرشيف</h1>
+          <p className="text-xs text-muted-foreground">{items.length} شخص مؤرشف</p>
+        </div>
+      </div>
+
+      {items.length === 0 ? (
+        <EmptyState icon={Archive} title="الأرشيف فارغ" description="عند أرشفة شخص ستجده هنا للاستعادة." />
+      ) : (
+        <Card className="p-2">
+          {items.map((p) => (
+            <div key={p.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-secondary transition-colors">
+              <div className="size-10 rounded-xl bg-secondary text-muted-foreground flex items-center justify-center font-bold">
+                {p.name.charAt(0)}
+              </div>
+              <div className="flex-1 font-semibold text-sm">{p.name}</div>
+              <button onClick={() => restore(p.id)} className="p-2 text-muted-foreground hover:text-success" title="استعادة">
+                <ArchiveRestore className="size-4" />
+              </button>
+              <button onClick={() => del(p.id, p.name)} className="p-2 text-muted-foreground hover:text-danger" title="حذف نهائي">
+                <Trash2 className="size-4" />
+              </button>
+            </div>
+          ))}
+        </Card>
+      )}
+    </div>
+  );
+}
