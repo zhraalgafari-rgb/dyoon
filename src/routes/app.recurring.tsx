@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
-import { processDueRecurring } from "@/lib/recurring";
+import { processRecurringFn } from "@/lib/jobs.functions";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Repeat, RotateCw } from "lucide-react";
 import { EmptyState } from "@/components/EmptyState";
@@ -52,8 +52,8 @@ function RecurringPage() {
 
   const runNow = async () => {
     if (!user) return;
-    const n = await processDueRecurring(user.id);
-    toast.success(n > 0 ? `تم توليد ${n} عملية` : "لا توجد عمليات مستحقة");
+    const res = await processRecurringFn();
+    toast.success(res.generated > 0 ? `تم توليد ${res.generated} عملية` : "لا توجد عمليات مستحقة");
     load();
   };
 

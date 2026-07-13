@@ -7,7 +7,8 @@ import { Bell, AlarmClock, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/common/PageHeader";
 import { EmptyState } from "@/components/EmptyState";
-import { completeReminder, snoozeReminder, syncRemindersFromTransactions, type Reminder } from "@/lib/reminders";
+import { completeReminder, snoozeReminder, type Reminder } from "@/lib/reminders";
+import { syncRemindersFn } from "@/lib/jobs.functions";
 import { ReminderCard, REPEAT_LABEL } from "@/features/reminders/ReminderCard";
 import { ReminderFormDialog } from "@/features/reminders/ReminderFormDialog";
 
@@ -37,7 +38,7 @@ function RemindersPage() {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      await syncRemindersFromTransactions(user.id);
+      await syncRemindersFn();
       await load();
     })();
   }, [user, load]);
@@ -45,9 +46,9 @@ function RemindersPage() {
   const sync = async () => {
     if (!user) return;
     setSyncing(true);
-    const n = await syncRemindersFromTransactions(user.id);
+    const res = await syncRemindersFn();
     setSyncing(false);
-    toast.success(n > 0 ? `تم إضافة ${n} تذكير من الديون` : "لا توجد ديون جديدة بتاريخ استحقاق");
+    toast.success(res.created > 0 ? `تم إضافة ${res.created} تذكير من الديون` : "لا توجد ديون جديدة بتاريخ استحقاق");
     load();
   };
 

@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { processDueRecurring } from "@/lib/recurring";
+import { processRecurringFn } from "@/lib/jobs.functions";
 import { type PersonBalance } from "@/features/debts/PersonRow";
 
 export interface Currency {
@@ -27,7 +27,7 @@ export function useDashboardData(userId?: string) {
     queryKey: ["dashboard", userId],
     queryFn: async () => {
       // Fire-and-forget background recurring process
-      if (userId) processDueRecurring(userId).catch(console.error);
+      if (userId) processRecurringFn().catch(console.error);
 
       const [{ data: p }, { data: dbBalances }, { data: c }] = await Promise.all([
         supabase.from("people").select("*").eq("is_archived", false).order("created_at", { ascending: false }),

@@ -88,6 +88,11 @@ export function useAddTransaction({
     const amt = evalExpr(amount);
     if (!isFinite(amt) || amt <= 0) { toast.error("أدخل مبلغاً صحيحاً"); return; }
     if (!currencyId) { toast.error("اختر العملة"); return; }
+    if (pendingFile && pendingFile.size > 5 * 1024 * 1024) {
+      toast.error("حجم المرفق يجب ألا يتجاوز 5 ميجابايت");
+      return;
+    }
+    
     let pid = personId;
     setBusy(true);
     try {
@@ -121,21 +126,17 @@ export function useAddTransaction({
       // Upload pending attachment if any
       if (pendingFile && newTxId) {
         try {
-          if (pendingFile.size > 5 * 1024 * 1024) {
-            toast.error("المرفق تجاوز 5MB ولم يُرفع");
-          } else {
-            const ext = pendingFile.name.split(".").pop() || "bin";
-            const path = `${user.id}/transaction/${newTxId}/${Date.now()}.${ext}`;
-            const { error: ue } = await supabase.storage.from("receipts").upload(path, pendingFile);
-            if (ue) throw ue;
-            await supabase.from("attachments").insert({
-              user_id: user.id, entity_type: "transaction", entity_id: newTxId,
-              storage_path: path, file_name: pendingFile.name, mime_type: pendingFile.type, size_bytes: pendingFile.size,
-            } as never);
-          }
+          const ext = pendingFile.name.split(".").pop() || "bin";
+          const path = `${user.id}/transaction/${newTxId}/${Date.now()}.${ext}`;
+          const { error: ue } = await supabase.storage.from("receipts").upload(path, pendingFile);
+          if (ue) throw ue;
+          await supabase.from("attachments").insert({
+            user_id: user.id, entity_type: "transaction", entity_id: newTxId,
+            storage_path: path, file_name: pendingFile.name, mime_type: pendingFile.type, size_bytes: pendingFile.size,
+          } as never);
         } catch (err) {
           const e = err as { message?: string };
-          toast.error("فشل رفع المرفق: " + (e.message ?? ""));
+          toast.error("تم حفظ العملية ولكن فشل رفع المرفق: " + (e.message ?? ""));
         }
       }
       const { logAudit } = await import("@/lib/audit");

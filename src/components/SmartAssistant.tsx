@@ -1,22 +1,53 @@
 import { useState, useRef, useEffect } from "react";
-import { useChat } from "@ai-sdk/react";
 import { Bot, Send, Loader2, Minimize2, Sparkles } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { cn } from "@/lib/utils";
+import { useServerFn } from "@tanstack/react-start";
+import { executeChatCommand } from "@/lib/ai.functions";
+import { useInvalidateAll } from "@/hooks/useInvalidateAll";
+
+type Message = { id: string; role: "user" | "assistant"; content: string };
 
 export function SmartAssistant() {
   const [isOpen, setIsOpen] = useState(false);
-  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
-    api: "/api/chat",
-  });
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  const executeChat = useServerFn(executeChatCommand);
+  const invalidateAll = useInvalidateAll();
 
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages]);
+  }, [messages, isLoading]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim() || isLoading) return;
+
+    const userMsg = input.trim();
+    setInput("");
+    setMessages((prev) => [...prev, { id: Date.now().toString(), role: "user", content: userMsg }]);
+    setIsLoading(true);
+
+    try {
+      const res = await executeChat({ data: { text: userMsg } });
+      setMessages((prev) => [...prev, { id: Date.now().toString(), role: "assistant", content: res.message }]);
+      
+      // If the AI modified data, refresh the UI
+      if (res.action === "add_transaction" || res.action === "add_person") {
+        await invalidateAll("transaction");
+      }
+    } catch (err: any) {
+      setMessages((prev) => [...prev, { id: Date.now().toString(), role: "assistant", content: "عذراً، حدث خطأ أثناء الاتصال بالخادم." }]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="fixed bottom-20 md:bottom-8 left-4 z-50 flex flex-col items-start" dir="rtl">
@@ -29,7 +60,7 @@ export function SmartAssistant() {
               </div>
               <div>
                 <h3 className="font-bold text-sm">المساعد الذكي</h3>
-                <p className="text-[11px] text-primary-foreground/80">مدعوم بـ Gemini AI</p>
+                <p className="text-[11px] text-primary-foreground/80">يفهم أرصدتك ويمكنه تسجيل العمليات</p>
               </div>
             </div>
             <button onClick={() => setIsOpen(false)} className="p-2 hover:bg-white/20 rounded-md transition-colors">
@@ -42,6 +73,7 @@ export function SmartAssistant() {
               <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground opacity-60">
                 <Sparkles className="size-10 mb-2 text-primary/40" />
                 <p className="text-sm">كيف يمكنني مساعدتك في إدارة أموالك اليوم؟</p>
+                <p className="text-xs mt-2">جرب: "سجل 50 ريال على أحمد"</p>
               </div>
             ) : (
               messages.map((m) => (
@@ -63,7 +95,7 @@ export function SmartAssistant() {
               <div className="flex justify-end">
                 <div className="bg-muted rounded-2xl rounded-bl-sm px-4 py-2.5 text-sm flex items-center gap-2">
                   <Loader2 className="size-4 animate-spin text-primary" />
-                  <span className="text-xs text-muted-foreground">جاري التفكير...</span>
+                  <span className="text-xs text-muted-foreground">جاري التفكير وجمع البيانات...</span>
                 </div>
               </div>
             )}
@@ -73,7 +105,7 @@ export function SmartAssistant() {
           <form onSubmit={handleSubmit} className="p-3 bg-muted/30 border-t flex items-center gap-2">
             <Input
               value={input}
-              onChange={handleInputChange}
+              onChange={(e) => setInput(e.target.value)}
               placeholder="اسأل المساعد الذكي..."
               className="flex-1 bg-background"
             />
