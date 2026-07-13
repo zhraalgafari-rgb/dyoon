@@ -28,9 +28,9 @@ export function PersonTable({ rows, onEdit, onArchive, onDelete }: Props) {
   return (
     <div className="rounded-lg border bg-card shadow-card overflow-hidden animate-in fade-in duration-200">
       <div className="overflow-x-auto">
-        <table className="w-full text-[10.5px] md:text-[12.5px] border-collapse">
+        <table className="w-full text-[10.5px] md:text-[12.5px] border-collapse border border-border">
           <thead className="bg-gradient-primary text-primary-foreground">
-            <tr className="[&>th]:px-2 [&>th]:py-1.5 md:[&>th]:px-3 md:[&>th]:py-2 [&>th]:font-bold [&>th]:text-right [&>th]:whitespace-nowrap [&>th]:border [&>th]:border-white/10 shadow-sm">
+            <tr className="[&>th]:px-2 [&>th]:py-1.5 md:[&>th]:px-3 md:[&>th]:py-2 [&>th]:font-bold [&>th]:text-right [&>th]:whitespace-nowrap [&>th]:border [&>th]:border-white/20 shadow-sm">
               <th className="w-7 md:w-8 text-center">#</th>
               <th>العميل</th>
               <th className="hidden sm:table-cell">الهاتف</th>
@@ -64,7 +64,7 @@ export function PersonTable({ rows, onEdit, onArchive, onDelete }: Props) {
                   return (
                     <tr
                       key={`${person.id}-${b.currency_id}`}
-                      className={`${zebra} ${stateTint} border-b border-border/60 hover:bg-primary/5 transition-colors [&>td]:border [&>td]:border-border/40`}
+                      className={`${zebra} ${stateTint} hover:bg-primary/5 transition-colors [&>td]:border [&>td]:border-border`}
                     >
                       <td className="px-2 py-1.5 md:px-3 md:py-2 text-muted-foreground tabular-nums text-center border-l-0">
                         {bi === 0 ? i + 1 : ""}
@@ -147,7 +147,7 @@ export function PersonTable({ rows, onEdit, onArchive, onDelete }: Props) {
               return (
                 <tr
                   key={person.id}
-                  className={`${zebra} ${stateTint} border-b border-border/60 hover:bg-primary/5 transition-colors [&>td]:border [&>td]:border-border/40`}
+                  className={`${zebra} ${stateTint} hover:bg-primary/5 transition-colors [&>td]:border [&>td]:border-border`}
                 >
                   <td className="px-2 py-1.5 md:px-3 md:py-2 text-muted-foreground tabular-nums text-center border-l-0">{i + 1}</td>
                   <td className="px-2 py-1.5 md:px-3 md:py-2">

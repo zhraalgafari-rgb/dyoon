@@ -2,7 +2,7 @@ import { createFileRoute, Outlet, useNavigate, useLocation, Link } from "@tansta
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
-import { Wallet, Loader2, Bell, Search, Moon, Sun } from "lucide-react";
+import { Wallet, Loader2, Bell, Search, Moon, Sun, Menu } from "lucide-react";
 import { BottomNav } from "@/components/BottomNav";
 import { DesktopSidebar } from "@/components/DesktopSidebar";
 import { ModuleTabs } from "@/components/common/ModuleTabs";
@@ -49,6 +49,7 @@ function AppLayout() {
   const [searchOpen, setSearchOpen] = useState(false);
   const { data: pending } = usePendingCount();
   const { theme, set: setTheme } = useTheme();
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   // تحديث فوري لجميع أجزاء التطبيق عند أي تغيير في قاعدة البيانات
   useRealtimeSync();
@@ -116,7 +117,7 @@ function AppLayout() {
 
   return (
     <div className="min-h-screen bg-background md:bg-muted/30 md:flex flex-row">
-      <DesktopSidebar />
+      <DesktopSidebar isOpen={sidebarOpen} />
 
       <div className="flex-1 flex flex-col min-h-screen relative w-full lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl lg:mx-auto md:bg-background md:shadow-2xl md:border-x border-border/50">
         <header className="bg-gradient-hero text-white sticky top-0 z-30 shadow-elevated">
@@ -127,9 +128,18 @@ function AppLayout() {
               </div>
               دفترك
             </Link>
-            <h1 className="hidden md:block font-bold text-[15px] md:text-[17px] tracking-tight">
-              {sectionTitle(path)}
-            </h1>
+            <div className="hidden md:flex items-center gap-3">
+              <button
+                onClick={() => setSidebarOpen((v) => !v)}
+                className="p-2 rounded-md hover:bg-white/10 transition-colors"
+                aria-label="القائمة الجانبية"
+              >
+                <Menu className="size-5" />
+              </button>
+              <h1 className="font-bold text-[15px] md:text-[17px] tracking-tight">
+                {sectionTitle(path)}
+              </h1>
+            </div>
 
             <div className="flex items-center gap-1.5 md:gap-2">
               <button

@@ -6,7 +6,11 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { BadgeCount } from "@/components/common/BadgeCount";
 
-export function DesktopSidebar() {
+interface Props {
+  isOpen: boolean;
+}
+
+export function DesktopSidebar({ isOpen }: Props) {
   const loc = useLocation();
   const path = loc.pathname;
   const nav = useNavigate();
@@ -35,7 +39,11 @@ export function DesktopSidebar() {
   const initial = (email || "د").charAt(0).toUpperCase();
 
   return (
-    <aside className="hidden md:flex flex-col w-64 lg:w-72 xl:w-80 h-screen sticky top-0 bg-card border-l border-border/60 overflow-hidden z-40">
+    <aside
+      className={`hidden md:flex flex-col h-screen sticky top-0 bg-card border-l border-border/60 overflow-hidden z-40 transition-all duration-300 ease-in-out ${
+        isOpen ? "w-64 lg:w-72 xl:w-80" : "w-0 border-l-0"
+      }`}
+    >
       <div className="p-4 md:p-5 pb-3 flex items-center gap-2.5 border-b border-border/60">
         <div className="size-9 md:size-10 rounded-xl bg-gradient-hero text-white flex items-center justify-center shadow-elevated shrink-0">
           <Wallet className="size-4 md:size-[18px]" />

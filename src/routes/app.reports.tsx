@@ -106,8 +106,8 @@ function ReportsPage() {
     const baseRow = (rpcTotals ?? []).find(
       (rt) => curs.find((c) => c.id === rt.currency_id)?.is_base,
     );
-    const owed = Number(baseRow?.total_owed ?? 0);
-    const owe  = Number(baseRow?.total_owe  ?? 0);
+    const owe  = Number(baseRow?.total_owed ?? 0); // total_owed in DB is credit (عليك)
+    const owed = Number(baseRow?.total_owe  ?? 0); // total_owe in DB is debit (لك)
     return { owe, owed, net: owed - owe };
   }, [rpcTotals, curs]);
 

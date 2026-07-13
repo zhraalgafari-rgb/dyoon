@@ -43,24 +43,24 @@ export function DebtsHeader({ rpcTotals, currencies, peopleCount, filter, onFilt
             </div>
             <div className="grid grid-cols-2 gap-2 md:gap-5 lg:gap-6">
               <button
-                onClick={() => onFilterChange(filter === "credit" ? "all" : "credit")}
-                className={`bg-white/10 backdrop-blur rounded-xl p-2 md:p-6 lg:p-7 text-right hover:bg-white/15 transition-all active:scale-[0.98] border border-white/5 shadow-inner ${filter === "credit" ? "ring-2 ring-white/60 bg-white/20" : ""}`}
-              >
-                <div className="flex items-center gap-1.5 text-[9px] md:text-[14px] lg:text-[16px] opacity-90 mb-1 md:mb-2 font-semibold"><TrendingUp className="size-3 md:size-5 lg:size-6" /> لك</div>
-                <div className="font-black text-[15px] md:text-[32px] lg:text-[38px] tabular-nums leading-tight tracking-tight">{fmtMoney(row.owed)}</div>
-                <div className="text-[8px] md:text-[13px] lg:text-[15px] opacity-75 mt-0.5 md:mt-2 font-medium">{row.currency.symbol}</div>
-              </button>
-              <button
                 onClick={() => onFilterChange(filter === "debit" ? "all" : "debit")}
                 className={`bg-white/10 backdrop-blur rounded-xl p-2 md:p-6 lg:p-7 text-right hover:bg-white/15 transition-all active:scale-[0.98] border border-white/5 shadow-inner ${filter === "debit" ? "ring-2 ring-white/60 bg-white/20" : ""}`}
               >
-                <div className="flex items-center gap-1.5 text-[9px] md:text-[14px] lg:text-[16px] opacity-90 mb-1 md:mb-2 font-semibold"><TrendingDown className="size-3 md:size-5 lg:size-6" /> عليك</div>
+                <div className="flex items-center gap-1.5 text-[9px] md:text-[14px] lg:text-[16px] opacity-90 mb-1 md:mb-2 font-semibold"><TrendingUp className="size-3 md:size-5 lg:size-6" /> لك</div>
                 <div className="font-black text-[15px] md:text-[32px] lg:text-[38px] tabular-nums leading-tight tracking-tight">{fmtMoney(row.owe)}</div>
+                <div className="text-[8px] md:text-[13px] lg:text-[15px] opacity-75 mt-0.5 md:mt-2 font-medium">{row.currency.symbol}</div>
+              </button>
+              <button
+                onClick={() => onFilterChange(filter === "credit" ? "all" : "credit")}
+                className={`bg-white/10 backdrop-blur rounded-xl p-2 md:p-6 lg:p-7 text-right hover:bg-white/15 transition-all active:scale-[0.98] border border-white/5 shadow-inner ${filter === "credit" ? "ring-2 ring-white/60 bg-white/20" : ""}`}
+              >
+                <div className="flex items-center gap-1.5 text-[9px] md:text-[14px] lg:text-[16px] opacity-90 mb-1 md:mb-2 font-semibold"><TrendingDown className="size-3 md:size-5 lg:size-6" /> عليك</div>
+                <div className="font-black text-[15px] md:text-[32px] lg:text-[38px] tabular-nums leading-tight tracking-tight">{fmtMoney(row.owed)}</div>
                 <div className="text-[8px] md:text-[13px] lg:text-[15px] opacity-75 mt-0.5 md:mt-2 font-medium">{row.currency.symbol}</div>
               </button>
             </div>
             <div className="flex items-center justify-between mt-2 md:mt-4 text-[9px] md:text-[13px] opacity-90 px-1 font-medium bg-black/10 p-2 md:p-3 rounded-lg backdrop-blur-sm">
-              <span>الصافي: <span className={`tabular-nums font-bold ${net > 0 ? "text-emerald-300" : net < 0 ? "text-rose-300" : ""}`}>{fmtMoney(net)}</span></span>
+              <span>الصافي: <span className={`tabular-nums font-bold ${net < 0 ? "text-emerald-300" : net > 0 ? "text-rose-300" : ""}`}>{fmtMoney(-net)}</span></span>
               <span className="opacity-80">{peopleCount} شخص</span>
             </div>
           </div>

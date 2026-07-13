@@ -18,7 +18,7 @@ export function MultiCurrencyTotals({ rpcTotals, currencies }: Props) {
     .map((rt) => {
       const c = currencies.find((x) => x.id === rt.currency_id);
       if (!c) return null;
-      return { currency: c, owed: Number(rt.total_owed || 0), owe: Number(rt.total_owe || 0) };
+      return { currency: c, owed: Number(rt.total_owe || 0), owe: Number(rt.total_owed || 0) };
     })
     .filter(Boolean) as { currency: CurrencyLite; owed: number; owe: number }[];
 
