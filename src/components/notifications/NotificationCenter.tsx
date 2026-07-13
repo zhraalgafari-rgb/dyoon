@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BadgeCount } from "@/components/common/BadgeCount";
@@ -18,7 +19,7 @@ interface NotificationCenterProps {
   onArchive: (id: string) => void;
 }
 
-export function NotificationCenter({ userId, items, unreadCount, loading, onMarkRead, onArchive }: NotificationCenterProps) {
+export function NotificationCenter({ userId, items, unreadCount, loading, onMarkRead, onMarkAllRead, onArchive }: NotificationCenterProps) {
   const [open, setOpen] = useState(false);
 
   return (

@@ -255,7 +255,7 @@ export function ReportsDashboard({
                             </div>
                         </div>
                         <div className="h-64 md:h-80">
-                            <ResponsiveContainer width="100%" height="100%">
+                            <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                                 <BarChart data={chartData} barGap={4} barCategoryGap="20%">
                                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
                                     <XAxis
@@ -361,7 +361,7 @@ export function ReportsDashboard({
                         </div>
                     </div>
                     <div className="h-64 md:h-80">
-                        <ResponsiveContainer width="100%" height="100%">
+                        <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                             <AreaChart data={chartData}>
                                 <defs>
                                     <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
@@ -417,7 +417,7 @@ export function ReportsDashboard({
                             توزيع الأرصدة حسب العملة
                         </h3>
                         <div className="h-64">
-                            <ResponsiveContainer width="100%" height="100%">
+                            <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                                 <RechartsPie>
                                     <Pie
                                         data={currencyData.map((d: any) => ({ name: d.name, value: d.owed + d.owe }))}

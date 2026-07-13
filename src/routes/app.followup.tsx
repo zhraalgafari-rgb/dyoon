@@ -16,8 +16,7 @@ import { Bucket, buildBuckets } from "@/lib/money/followup";
 import { FollowupBucketCard } from "@/features/reminders/FollowupBucketCard";
 import { FollowupDraftDialog } from "@/features/reminders/FollowupDraftDialog";
 import { FollowupManager } from "@/features/reminders/FollowupManager";
-import { useActivePeople } from "@/hooks/usePeople";
-import { useCurrencies } from "@/hooks/useCurrencies";
+import { useDashboardData } from "@/hooks/useDashboardData";
 
 export const Route = createFileRoute("/app/followup")({ component: FollowupPage });
 
@@ -29,29 +28,30 @@ function FollowupPage() {
   const [draftText, setDraftText] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
 
-  const { data: people = [] } = useActivePeople();
-  const { data: currencies = [] } = useCurrencies();
+  const { data: dashboard, isLoading: dashLoading } = useDashboardData(user?.id);
+  const people = dashboard?.people ?? [];
+  const currencies = dashboard?.currencies ?? [];
 
-  const { data: buckets = [], isLoading } = useQuery({
+  const { data: buckets = [], isLoading: bucketsLoading } = useQuery({
     queryKey: ["followupBuckets", user?.id],
     queryFn: async () => {
-      if (!user) return [];
+      if (!user || !dashboard) return [];
       const [{ data: tx }] = await Promise.all([
-        supabase.from("transactions").select("id,person_id,amount,direction,currency_id,due_date,is_paid,transaction_date,details").eq("is_paid", false),
+        supabase.from("transactions")
+          .select("id,person_id,currency_id,due_date")
+          .not("due_date", "is", null)
+          .eq("is_paid", false),
       ]);
-      const currencyMap = new Map<string, any>((currencies ?? []).map((c: any) => [c.id, c]));
+      const currencyMap = new Map<string, any>(currencies.map((c: any) => [c.id, c]));
       const peopleMap = new Map<string, any>();
-      (people).forEach((p) => peopleMap.set(p.id, p));
-      const list = buildBuckets(tx ?? [], peopleMap, currencyMap);
-      list.sort((a, b) => {
-        const order = { critical: 0, late: 1, soon: 2, ok: 3 } as const;
-        if (order[a.severity] !== order[b.severity]) return order[a.severity] - order[b.severity];
-        return b.daysOverdue - a.daysOverdue;
-      });
-      return list;
+      people.forEach((p) => peopleMap.set(p.id, p));
+      
+      return buildBuckets(dashboard.personCurrencyBalances, tx ?? [], peopleMap, currencyMap);
     },
-    enabled: !!user && currencies.length > 0 && people.length > 0,
+    enabled: !!user && !!dashboard && currencies.length > 0 && people.length > 0,
   });
+
+  const isLoading = dashLoading || bucketsLoading;
 
   // Local notification for critical/late buckets once per session
   useMemo(() => {

@@ -29,43 +29,56 @@ export const severityMeta: Record<Bucket["severity"], { label: string; cls: stri
   critical: { label: "حرج", cls: "bg-danger text-danger-foreground", ring: "ring-danger/50" },
 };
 
-export function buildBuckets(txs: any[], peopleMap: Map<string, Person>, currencyMap: Map<string, any>): Bucket[] {
-  const grouped = new Map<string, { person: Person; net: number; currency: string; oldestDue: string | null; daysOverdue: number; count: number }>();
+import { PersonCurrencyBalance } from "@/hooks/useDashboardData";
+
+export function buildBuckets(
+  balancesMap: Map<string, PersonCurrencyBalance[]>,
+  dueTxs: any[],
+  peopleMap: Map<string, Person>,
+  currencyMap: Map<string, any>
+): Bucket[] {
+  const overdueMap = new Map<string, { daysOverdue: number; oldestDue: string | null }>();
   const today = Date.now();
   
-  (txs ?? []).forEach((t: any) => {
-    const person = peopleMap.get(t.person_id);
-    if (!person) return;
-    const currencyName = currencyMap.get(t.currency_id)?.name ?? t.currency_id;
+  // Find the oldest unpaid due_date for each person/currency
+  (dueTxs ?? []).forEach((t: any) => {
+    if (!t.due_date) return;
     const key = `${t.person_id}|${t.currency_id}`;
-    const sign = t.direction === "credit" ? 1 : -1; // credit = he owes me
-    const entry = grouped.get(key) ?? { person, net: 0, currency: currencyName, oldestDue: null, daysOverdue: -9999, count: 0 };
+    const d = new Date(t.due_date).getTime();
+    const days = Math.floor((today - d) / 86400000);
+    const existing = overdueMap.get(key) ?? { daysOverdue: -9999, oldestDue: null };
     
-    entry.net += sign * Number(t.amount);
-    entry.count += 1;
-    
-    if (t.due_date) {
-      const d = new Date(t.due_date).getTime();
-      const days = Math.floor((today - d) / 86400000);
-      if (days > entry.daysOverdue) {
-        entry.daysOverdue = days;
-        entry.oldestDue = t.due_date;
-      }
+    // We want the OLDEST due date (the one furthest in the past), which means highest daysOverdue
+    if (days > existing.daysOverdue) {
+      existing.daysOverdue = days;
+      existing.oldestDue = t.due_date;
+      overdueMap.set(key, existing);
     }
-    grouped.set(key, entry);
   });
 
   const list: Bucket[] = [];
-  grouped.forEach((g) => {
-    if (g.net <= 0) return; // only show debtors (people who owe the user)
-    list.push({
-      person: g.person,
-      net: g.net,
-      currency: g.currency,
-      daysOverdue: g.daysOverdue,
-      oldestDue: g.oldestDue,
-      txCount: g.count,
-      severity: severityFor(g.daysOverdue, g.net, g.person.credit_limit),
+  
+  balancesMap.forEach((balances, personId) => {
+    const person = peopleMap.get(personId);
+    if (!person) return;
+    
+    balances.forEach((b) => {
+      // Only include people who actually owe us money
+      if (b.net <= 0) return;
+      
+      const currencyName = currencyMap.get(b.currency_id)?.name ?? b.currency_id;
+      const key = `${personId}|${b.currency_id}`;
+      const overdueInfo = overdueMap.get(key) ?? { daysOverdue: -9999, oldestDue: null };
+      
+      list.push({
+        person,
+        net: b.net,
+        currency: currencyName,
+        daysOverdue: overdueInfo.daysOverdue,
+        oldestDue: overdueInfo.oldestDue,
+        txCount: b.txCount,
+        severity: severityFor(overdueInfo.daysOverdue, b.net, person.credit_limit),
+      });
     });
   });
 
