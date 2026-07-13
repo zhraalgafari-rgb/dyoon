@@ -61,6 +61,7 @@ function ReportsPage() {
   const { data: rpcTotals } = useQuery({
     queryKey: ["rpcTotals", user?.id],
     queryFn: async () => {
+      if (!user?.id) return [] as TotalsRow[];
       try {
         const { data, error } = await (supabase.rpc as any)("rpc_get_dashboard_totals");
         if (error) throw error;

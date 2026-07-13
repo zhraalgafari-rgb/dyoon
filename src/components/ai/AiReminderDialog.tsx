@@ -6,19 +6,22 @@ import { Sparkles, Loader2, Copy, MessageCircle } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { generateReminderMessage } from "@/lib/ai.functions";
 import { toast } from "sonner";
+import { useAddContactLog } from "@/hooks/useContactLog";
 
 interface Props {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   personName: string;
+  personId?: string;
   amount: number;
   currency?: string;
   phone?: string | null;
   daysOverdue?: number;
 }
 
-export function AiReminderDialog({ open, onOpenChange, personName, amount, currency, phone, daysOverdue }: Props) {
+export function AiReminderDialog({ open, onOpenChange, personName, personId, amount, currency, phone, daysOverdue }: Props) {
   const gen = useServerFn(generateReminderMessage);
+  const addLog = useAddContactLog();
   const [tone, setTone] = useState<"polite" | "firm" | "friendly">("polite");
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
@@ -34,10 +37,24 @@ export function AiReminderDialog({ open, onOpenChange, personName, amount, curre
     } finally { setBusy(false); }
   };
 
-  const sendWa = () => {
+  const sendWa = async () => {
     const text = encodeURIComponent(msg);
     const p = phone ? phone.replace(/\D/g, "") : "";
     window.open(p ? `https://wa.me/${p}?text=${text}` : `https://wa.me/?text=${text}`, "_blank");
+    // Auto-save contact log
+    if (personId) {
+      try {
+        await addLog.mutateAsync({
+          person_id: personId,
+          channel: "whatsapp",
+          direction: "outgoing",
+          status: "sent",
+          message: msg,
+          ai_generated: true,
+        });
+        toast.success("تم تسجيل الرسالة في سجل التواصل ✅");
+      } catch { /* silent */ }
+    }
   };
 
   const copy = async () => { await navigator.clipboard.writeText(msg); toast.success("تم النسخ"); };

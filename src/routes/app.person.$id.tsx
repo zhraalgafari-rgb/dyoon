@@ -3,7 +3,9 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, ClipboardList, Paperclip, BarChart3 } from "lucide-react";
+import { Plus, ClipboardList, Paperclip, BarChart3, MessageSquare } from "lucide-react";
+import { ContactLogDialog } from "@/features/contact-log/ContactLogDialog";
+import { ContactLogList } from "@/features/contact-log/ContactLogList";
 import { Button } from "@/components/ui/button";
 import { useInvalidateAll } from "@/hooks/useInvalidateAll";
 import { ListSkeleton } from "@/components/Skeleton";
@@ -72,7 +74,8 @@ function PersonPage() {
   const [confirmArchive, setConfirmArchive] = useState(false);
   const [confirmDelPerson, setConfirmDelPerson] = useState(false);
   const [openAi, setOpenAi] = useState(false);
-  const [tab, setTab] = useState<"timeline" | "attachments" | "insights">("timeline");
+  const [tab, setTab] = useState<"timeline" | "attachments" | "insights" | "contact">("timeline");
+  const [openContactLog, setOpenContactLog] = useState(false);
 
   const { data: currencies = [] } = useCurrencies();
   const { data: allPeople = [] } = useAllPeople();
@@ -236,11 +239,12 @@ function PersonPage() {
 
       {/* Tabs + actions */}
       <div className="flex items-center gap-2">
-        <div className="grid grid-cols-3 gap-1 rounded-xl bg-secondary/60 p-1 ring-1 ring-border flex-1">
+        <div className="grid grid-cols-4 gap-1 rounded-xl bg-secondary/60 p-1 ring-1 ring-border flex-1">
           {[
-            { v: "timeline" as const, label: "المعاملات", icon: ClipboardList },
-            { v: "attachments" as const, label: "المرفقات", icon: Paperclip },
-            { v: "insights" as const, label: "تحليلات", icon: BarChart3 },
+            { v: "timeline" as const,    label: "المعاملات", icon: ClipboardList },
+            { v: "contact" as const,     label: "التواصل",   icon: MessageSquare },
+            { v: "attachments" as const, label: "المرفقات",  icon: Paperclip },
+            { v: "insights" as const,    label: "تحليلات",   icon: BarChart3 },
           ].map((t) => {
             const Icon = t.icon;
             const active = tab === t.v;
@@ -248,7 +252,7 @@ function PersonPage() {
               <button
                 key={t.v}
                 onClick={() => setTab(t.v)}
-                className={`inline-flex items-center justify-center gap-1 rounded-lg px-2 py-1.5 md:px-3 md:py-2 text-[11.5px] md:text-[13px] font-semibold transition ${active
+                className={`inline-flex items-center justify-center gap-1 rounded-lg px-1.5 py-1.5 md:px-2 md:py-2 text-[10.5px] md:text-[12px] font-semibold transition ${active
                     ? "bg-card text-primary shadow-sm ring-1 ring-primary/30"
                     : "text-muted-foreground hover:text-foreground"
                   }`}
@@ -302,6 +306,21 @@ function PersonPage() {
         </div>
       )}
 
+      {tab === "contact" && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-[12px] text-muted-foreground font-medium">سجل التواصل مع العميل</p>
+            <button
+              onClick={() => setOpenContactLog(true)}
+              className="inline-flex items-center gap-1.5 bg-gradient-primary text-primary-foreground px-3 py-1.5 rounded-lg text-[12px] font-bold shadow-sm hover:opacity-90 transition-opacity"
+            >
+              <MessageSquare className="size-3.5" /> تسجيل تواصل
+            </button>
+          </div>
+          <ContactLogList personId={id} />
+        </div>
+      )}
+
       <button
         onClick={() => {
           setEditingTx(null);
@@ -338,6 +357,7 @@ function PersonPage() {
       <AiReminderDialog
         open={openAi}
         onOpenChange={setOpenAi}
+        personId={id}
         personName={name}
         amount={Math.abs(balanceForActions)}
         currency={primaryBalance?.currency.name}
@@ -378,6 +398,15 @@ function PersonPage() {
         destructive
         confirmLabel="حذف"
         onConfirm={delPerson}
+      />
+      <ContactLogDialog
+        open={openContactLog}
+        onOpenChange={setOpenContactLog}
+        personId={id}
+        personName={name}
+        phone={phone}
+        amount={Math.abs(balanceForActions)}
+        currency={primaryBalance?.currency?.name}
       />
     </div>
   );

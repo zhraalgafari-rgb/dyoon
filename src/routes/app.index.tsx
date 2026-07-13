@@ -21,13 +21,13 @@ import { EmptyState } from "@/components/EmptyState";
 import { SearchBar } from "@/components/common/SearchBar";
 import { FabButton } from "@/components/common/FabButton";
 import { DebtsHeader } from "@/features/debts/DebtsHeader";
-import { MultiCurrencyTotals } from "@/features/debts/MultiCurrencyTotals";
 import { PersonRow } from "@/features/debts/PersonRow";
 import { PersonTable } from "@/features/debts/PersonTable";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import { toast } from "sonner";
 import { useDashboardData, type Person } from "@/hooks/useDashboardData";
-import { useDashboardFilter, type ViewMode } from "@/hooks/useDashboardFilter";
+import { useDashboardFilter, type ViewMode, type Sort } from "@/hooks/useDashboardFilter";
+
 
 export const Route = createFileRoute("/app/")({ component: DebtsHome });
 
@@ -62,6 +62,7 @@ function DebtsHome() {
 
   const people = data?.people ?? [];
   const personBalances = data?.personBalances ?? new Map();
+  const personCurrencyBalances = data?.personCurrencyBalances ?? new Map();
   const rpcTotalsData = data?.rpcTotals ?? [];
   const currencies = data?.currencies ?? [];
   const baseCurrency = currencies.find((c) => c.is_base) ?? currencies[0];
@@ -75,17 +76,6 @@ function DebtsHome() {
   useEffect(() => {
     setVisibleCount(30);
   }, [deferredQ, filter, sort]);
-
-  // حساب الأرصدة الإجمالية للعملة الأساسية فقط — بدون خلط العملات
-  const totals = useMemo(() => {
-    const baseRow = rpcTotalsData.find(
-      (rt: any) => currencies.find((c) => c.id === rt.currency_id)?.is_base,
-    );
-    return {
-      owed: Number(baseRow?.total_owed ?? 0),
-      owe:  Number(baseRow?.total_owe  ?? 0),
-    };
-  }, [rpcTotalsData, currencies]);
 
   const visibleList = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount]);
 
@@ -157,16 +147,13 @@ function DebtsHome() {
       </div>
 
       <DebtsHeader
-        owed={totals.owed}
-        owe={totals.owe}
-        baseName={baseCurrency?.name ?? "محلي"}
+        rpcTotals={rpcTotalsData}
+        currencies={currencies}
         peopleCount={people.length}
-        txCount={0}
         filter={filter}
         onFilterChange={setFilter}
       />
 
-      <MultiCurrencyTotals rpcTotals={rpcTotalsData} currencies={currencies} />
 
       <div className="flex items-center gap-1.5">
         <div className="flex-1">
@@ -254,6 +241,8 @@ function DebtsHome() {
               totalCredit: 0,
               totalDebit: 0,
             },
+            currencyBalances: personCurrencyBalances.get(p.id) ?? [],
+            currencies,
           }))}
           onEdit={(p) => {
             const full = people.find((x) => x.id === p.id)!;
@@ -278,6 +267,8 @@ function DebtsHome() {
               key={p.id}
               person={p}
               balance={personBalances.get(p.id) ?? { net: 0, count: 0, lastDate: 0 }}
+              currencyBalances={personCurrencyBalances.get(p.id) ?? []}
+              currencies={currencies}
               onEdit={() => {
                 setEditingPerson({
                   id: p.id,
