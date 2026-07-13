@@ -94,6 +94,8 @@ function DebtsHome() {
     return () => observer.disconnect();
   }, [filtered.length]);
 
+  const hasActiveBalances = rpcTotalsData.some((r: any) => r.owed > 0 || r.owe > 0);
+
   return (
     <div className="space-y-3 animate-in fade-in duration-300">
       {pullDist > 10 && (
@@ -113,7 +115,7 @@ function DebtsHome() {
           <h2 className="font-black text-[17px] md:text-[22px] leading-tight">العملاء</h2>
           <p className="text-[11px] md:text-[13px] text-muted-foreground mt-0.5">
             {people.length} عميل ·{" "}
-            {totals.owed > 0 || totals.owe > 0 ? "لديك أرصدة نشطة" : "لا توجد أرصدة"}
+            {hasActiveBalances ? "لديك أرصدة نشطة" : "لا توجد أرصدة"}
           </p>
         </div>
         <div className="flex items-center gap-2">
