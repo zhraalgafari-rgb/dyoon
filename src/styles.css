@@ -34,6 +34,12 @@
   --color-danger-soft: var(--danger-soft);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-info-soft: var(--info-soft);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-soft: var(--warning-soft);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -93,6 +99,16 @@
   --gradient-success: linear-gradient(135deg, oklch(0.5 0.18 160), oklch(0.55 0.16 175));
   --gradient-danger: linear-gradient(135deg, oklch(0.5 0.22 25), oklch(0.55 0.22 15));
   --gradient-card: linear-gradient(180deg, oklch(1 0 0), oklch(0.985 0.006 240));
+
+  /* Info (blue) */
+  --info: oklch(0.5 0.2 250);
+  --info-foreground: oklch(0.99 0 0);
+  --info-soft: oklch(0.93 0.08 250);
+
+  /* Warning (amber) */
+  --warning: oklch(0.65 0.18 85);
+  --warning-foreground: oklch(0.16 0.03 255);
+  --warning-soft: oklch(0.95 0.08 85);
 }
 
 .dark {
@@ -118,6 +134,10 @@
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 12%);
   --ring: oklch(0.72 0.2 255);
+  --info: oklch(0.72 0.2 250);
+  --info-soft: oklch(0.32 0.1 250);
+  --warning: oklch(0.78 0.18 85);
+  --warning-soft: oklch(0.35 0.12 85);
 }
 
 @layer base {
@@ -190,5 +210,190 @@
 
   .shadow-glow {
     box-shadow: var(--shadow-glow);
+  }
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+
+  50% {
+    transform: scale(1);
+    opacity: 0.3;
+  }
+
+  100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes bounce-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
+
+  70% {
+    transform: scale(0.9);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slide-up-fade {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Animation Classes */
+.animate-fade-in-up {
+  animation: fadeInUp 0.4s ease-out;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.3s ease-out;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.4s ease-out;
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 2s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg,
+      oklch(0.96 0.012 240) 0%,
+      oklch(0.99 0.005 240) 50%,
+      oklch(0.96 0.012 240) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.animate-bounce-in {
+  animation: bounce-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.animate-slide-up-fade {
+  animation: slide-up-fade 0.4s ease-out;
+}
+
+/* Skeleton Loading */
+.skeleton {
+  background: linear-gradient(90deg,
+      oklch(0.96 0.012 240) 0%,
+      oklch(0.99 0.005 240) 50%,
+      oklch(0.96 0.012 240) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 0.5rem;
+}
+
+/* Smooth Transitions */
+.transition-smooth {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.transition-bounce {
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Focus Styles */
+.focus-ring {
+  @apply outline-none;
+  @apply ring-2;
+  @apply ring-primary/50;
+  @apply ring-offset-2;
+  @apply transition-all;
+}
+
+.focus-ring:focus {
+  @apply ring-2;
+  @apply ring-primary/50;
+  @apply ring-offset-2;
+}
+
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    @apply bg-white;
+    @apply text-black;
+  }
+
+  .print-break-before {
+    page-break-before: always;
+  }
+
+  .print-break-after {
+    page-break-after: always;
   }
 }

@@ -1,7 +1,6 @@
 import { fmtMoney } from "@/lib/format";
 import type { CurrencyLite } from "@/lib/money/balances";
-import { aggregateOwedOwePerCurrency, type MoneyTx } from "@/lib/money/balances";
-import { BalanceCard } from "@/components/common/BalanceCard";
+import { BalanceCardV2 } from "@/components/common/BalanceCardV2";
 
 interface Props {
   rpcTotals: any[];
@@ -34,10 +33,11 @@ export function MultiCurrencyTotals({ rpcTotals, currencies }: Props) {
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-1.5 md:gap-2">
         {rows.map((r) => (
-          <BalanceCard
+          <BalanceCardV2
             key={r.currency.id}
             data={{ currency: r.currency, owed: r.owed, owe: r.owe }}
             defaultOpen={r.currency.is_base}
+            index={rows.indexOf(r)}
           />
         ))}
       </div>

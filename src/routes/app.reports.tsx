@@ -1,19 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Card } from "@/components/ui/card";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { BarChart3, Download, FileText, TrendingUp, TrendingDown } from "lucide-react";
-import { fmtMoney, fmtDate, monthRange } from "@/lib/format";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
+import { BarChart3, Download, FileText, TrendingUp, TrendingDown, Sparkles, Calendar, RefreshCw } from "lucide-react";
+import { fmtMoney, fmtDate } from "@/lib/format";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import { useCurrencies } from "@/hooks/useCurrencies";
 import { useExpenseCategories } from "@/hooks/useExpenseCategories";
 import { useAllPeople } from "@/hooks/usePeople";
+import { ReportsDashboard } from "@/components/reports/ReportsDashboard";
+import { tokens } from "@/lib/design-tokens";
 
 export const Route = createFileRoute("/app/reports")({ component: ReportsPage });
 
@@ -24,97 +23,83 @@ interface TotalsRow { currency_id: string; total_owed: number; total_owe: number
 
 function ReportsPage() {
   const { user } = useAuth();
-  const queryClient = useQueryClient();
+  const [activeView, setActiveView] = useState<"dashboard" | "export">("dashboard");
 
   const { data: curs = [] } = useCurrencies();
   const { data: allPeople = [] } = useAllPeople();
   const { data: cats = [] } = useExpenseCategories();
 
-  const { data: rpcMonthly } = useQuery({
+  const { data: rpcMonthly, isLoading: loadingMonthly } = useQuery({
     queryKey: ["rpcMonthly", user?.id],
     queryFn: async () => {
       try {
         const { data, error } = await (supabase.rpc as any)("rpc_get_monthly_expenses");
         if (error) throw error;
-        return (data ?? []) as MonthlyRow[];
+        return (data ?? []);
       } catch {
-        return [] as MonthlyRow[];
+        return [];
       }
     },
     enabled: !!user,
   });
 
-  const { data: rpcTop } = useQuery({
+  const { data: rpcTop, isLoading: loadingTop } = useQuery({
     queryKey: ["rpcTopDebtors", user?.id],
     queryFn: async () => {
       try {
-        const { data, error } = await (supabase.rpc as any)("rpc_get_top_debtors", { p_limit: 8 });
+        const { data, error } = await (supabase.rpc as any)("rpc_get_top_debtors", { p_limit: 10 });
         if (error) throw error;
-        return (data ?? []) as TopDebtorRow[];
+        return (data ?? []);
       } catch {
-        return [] as TopDebtorRow[];
+        return [];
       }
     },
     enabled: !!user,
   });
 
-  const { data: rpcTotals } = useQuery({
+  const { data: rpcTotals, isLoading: loadingTotals } = useQuery({
     queryKey: ["rpcTotals", user?.id],
     queryFn: async () => {
-      if (!user?.id) return [] as TotalsRow[];
+      if (!user?.id) return [];
       try {
         const { data, error } = await (supabase.rpc as any)("rpc_get_dashboard_totals");
         if (error) throw error;
-        return (data ?? []) as TotalsRow[];
+        return (data ?? []);
       } catch {
-        return [] as TotalsRow[];
+        return [];
       }
     },
     enabled: !!user,
   });
 
-  const monthlyData = useMemo(() => {
-    const curList = curs;
-    const raw = rpcMonthly ?? [];
-    const toBase = (amt: number, cid: string) => amt * (curList.find((x) => x.id === cid)?.rate ?? 1);
-    const mMap = new Map<string, number>();
-    raw.forEach((row: any) => {
-      const val = toBase(row.total, row.currency_id);
-      mMap.set(row.expense_month, (mMap.get(row.expense_month) ?? 0) + val);
-    });
-    const arr: { month: string; total: number }[] = [];
-    const now = new Date();
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const disp = `${d.getMonth() + 1}/${String(d.getFullYear()).slice(2)}`;
-      arr.push({ month: disp, total: Math.round(mMap.get(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`) ?? 0) });
-    }
-    return arr;
-  }, [rpcMonthly, curs]);
+  const base = curs.find((c: any) => c.is_base) ?? curs[0];
+  const people = allPeople as any[];
+  const isLoading = loadingMonthly || loadingTop || loadingTotals;
+
+  // Calculate totals for PDF export
+  const totals = useMemo(() => {
+    const baseRow = (rpcTotals ?? []).find(
+      (rt: any) => curs.find((c: any) => c.id === rt.currency_id)?.is_base,
+    );
+    const owe = Number(baseRow?.total_owed ?? 0);
+    const owed = Number(baseRow?.total_owe ?? 0);
+    return { owe, owed, net: owed - owe };
+  }, [rpcTotals, curs]);
 
   const topPeople = useMemo(() => {
     const raw = rpcTop ?? [];
     return raw.map((row: any) => ({
       id: row.person_id,
-      name: allPeople.find((x) => x.id === row.person_id)?.name ?? "—",
+      name: people.find((x: any) => x.id === row.person_id)?.name ?? "—",
       net: Number(row.net_base),
     }));
-  }, [rpcTop, allPeople]);
-
-  // إجماليات العملة الأساسية فقط — كل عملة منفصلة في BalanceCard
-  const totals = useMemo(() => {
-    const baseRow = (rpcTotals ?? []).find(
-      (rt) => curs.find((c) => c.id === rt.currency_id)?.is_base,
-    );
-    const owe  = Number(baseRow?.total_owed ?? 0); // total_owed in DB is credit (عليك)
-    const owed = Number(baseRow?.total_owe  ?? 0); // total_owe in DB is debit (لك)
-    return { owe, owed, net: owed - owe };
-  }, [rpcTotals, curs]);
-
-  const base = curs.find((c) => c.is_base) ?? curs[0];
-  const people = allPeople as Person[];
+  }, [rpcTop, people]);
 
   const exportCSV = async () => {
+    if (people.length === 0) {
+      toast.error("لا توجد بيانات للتصدير");
+      return;
+    }
     toast.loading("جارِ التصدير...");
     const [{ data: t }, { data: e }] = await Promise.all([
       supabase.from("transactions").select("*").order("transaction_date", { ascending: false }),
@@ -140,6 +125,10 @@ function ReportsPage() {
   };
 
   const exportPDF = () => {
+    if (people.length === 0) {
+      toast.error("لا توجد بيانات للتصدير");
+      return;
+    }
     const doc = new jsPDF();
     doc.setFontSize(18); doc.text("Daftarak Report", 14, 20);
     doc.setFontSize(10); doc.text(`Generated: ${new Date().toISOString().slice(0, 10)}`, 14, 28);
@@ -148,7 +137,7 @@ function ReportsPage() {
     doc.text(`Net: ${fmtMoney(totals.net)}`, 14, 58);
     doc.text("Top balances:", 14, 72);
     let y = 80;
-    topPeople.forEach((p) => {
+    topPeople.forEach((p: { name: string; net: number }) => {
       doc.text(`${p.name}: ${p.net >= 0 ? "+" : ""}${fmtMoney(p.net)}`, 14, y); y += 8;
     });
     doc.save(`daftarak-report-${Date.now()}.pdf`);
@@ -156,82 +145,132 @@ function ReportsPage() {
   };
 
   return (
-    <div className="space-y-4 md:space-y-6 animate-in fade-in duration-300">
-      <div className="flex items-center gap-2 md:gap-3">
-        <div className="size-10 md:size-12 rounded-xl bg-gradient-primary text-primary-foreground flex items-center justify-center shadow-glow">
-          <BarChart3 className="size-5 md:size-6" />
+    <div className="space-y-4 animate-fade-in-up">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="relative size-11 md:size-13 rounded-xl bg-gradient-primary text-primary-foreground flex items-center justify-center shadow-glow">
+            <BarChart3 className="size-5 md:size-6" />
+            <div className="absolute -top-1 -right-1 size-2.5 rounded-full bg-success animate-pulse-ring" />
+          </div>
+          <div>
+            <h1 className="font-black text-[18px] md:text-[24px] text-foreground leading-tight tracking-tight">
+              التقارير والتحليلات
+            </h1>
+            <p className="text-[11px] md:text-[13px] text-muted-foreground font-medium mt-0.5">
+              نظرة شاملة على جميع معاملاتك بالـ {base?.name ?? "العملة الأساسية"}
+            </p>
+          </div>
         </div>
-        <div>
-          <h1 className="font-bold text-lg md:text-2xl leading-tight">التقارير والتحليلات</h1>
-          <p className="text-xs md:text-sm text-muted-foreground">نظرة شاملة بالـ {base?.name ?? "محلي"}</p>
+
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={() => setActiveView("dashboard")}
+            variant={activeView === "dashboard" ? "default" : "outline"}
+            size="sm"
+            className={`h-9 gap-1.5 text-[11px] font-bold ${activeView === "dashboard" ? "bg-gradient-primary text-primary-foreground shadow-glow" : ""}`}
+          >
+            <BarChart3 className="size-3.5" />
+            التحليلات
+          </Button>
+          <Button
+            onClick={() => setActiveView("export")}
+            variant={activeView === "export" ? "default" : "outline"}
+            size="sm"
+            className={`h-9 gap-1.5 text-[11px] font-bold ${activeView === "export" ? "bg-gradient-primary text-primary-foreground shadow-glow" : ""}`}
+          >
+            <Download className="size-3.5" />
+            التصدير
+          </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-2 md:gap-4">
-        <Card className="p-3 md:p-5"><div className="text-[10px] md:text-xs text-muted-foreground flex items-center gap-1"><TrendingUp className="size-3 md:size-4 text-success" />لك</div><div className="font-bold text-success text-sm md:text-xl mt-1">{fmtMoney(totals.owed)}</div></Card>
-        <Card className="p-3 md:p-5"><div className="text-[10px] md:text-xs text-muted-foreground flex items-center gap-1"><TrendingDown className="size-3 md:size-4 text-danger" />عليك</div><div className="font-bold text-danger text-sm md:text-xl mt-1">{fmtMoney(totals.owe)}</div></Card>
-        <Card className="p-3 md:p-5"><div className="text-[10px] md:text-xs text-muted-foreground">الصافي</div><div className={`font-bold text-sm md:text-xl mt-1 ${totals.net >= 0 ? "text-success" : "text-danger"}`}>{fmtMoney(totals.net)}</div></Card>
-      </div>
-
-      <Tabs defaultValue="expenses">
-        <TabsList className="grid grid-cols-2 w-full md:w-80">
-          <TabsTrigger value="expenses">المصاريف</TabsTrigger>
-          <TabsTrigger value="people">الأشخاص</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="expenses" className="space-y-3 md:space-y-4 mt-3">
-          <Card className="p-4 md:p-6">
-            <h3 className="font-semibold text-sm md:text-base mb-3">آخر 6 أشهر</h3>
-            <div className="w-full">
-              <ResponsiveContainer width="100%" height={260}>
-                <BarChart data={monthlyData}>
-                  <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                  <XAxis dataKey="month" fontSize={11} />
-                  <YAxis fontSize={11} />
-                  <Tooltip formatter={(v: any) => fmtMoney(Number(v))} />
-                  <Bar dataKey="total" fill="var(--primary)" radius={[8, 8, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
-
-          <Card className="p-4 md:p-6">
-            <h3 className="font-semibold text-sm md:text-base mb-3">اتجاه المصاريف</h3>
-            <div className="w-full">
-              <ResponsiveContainer width="100%" height={220}>
-                <LineChart data={monthlyData}>
-                  <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                  <XAxis dataKey="month" fontSize={11} />
-                  <YAxis fontSize={11} />
-                  <Tooltip formatter={(v: any) => fmtMoney(Number(v))} />
-                  <Line type="monotone" dataKey="total" stroke="var(--primary)" strokeWidth={2.5} dot={{ r: 4 }} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="people" className="space-y-2 md:space-y-3 mt-3">
-          <Card className="p-3 md:p-5">
-            <h3 className="font-semibold text-sm md:text-base mb-2">أكبر الأرصدة</h3>
-            {topPeople.length === 0 ? (
-              <div className="text-sm md:text-base text-muted-foreground py-4 text-center">لا توجد بيانات</div>
-            ) : topPeople.map((p) => (
-              <div key={p.id} className="flex items-center justify-between py-2 md:py-3 border-b last:border-0">
-                <span className="text-sm md:text-base font-medium">{p.name}</span>
-                <span className={`font-bold text-sm md:text-base ${p.net >= 0 ? "text-success" : "text-danger"}`}>
-                  {p.net >= 0 ? "+" : ""}{fmtMoney(p.net)}
-                </span>
+      {isLoading ? (
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="rounded-2xl border border-border/50 bg-card p-4 space-y-3 animate-pulse">
+                <div className="skeleton h-3 w-16 rounded-md" />
+                <div className="skeleton h-6 w-24 rounded-md" />
+                <div className="skeleton h-2 w-full rounded-md" />
               </div>
             ))}
-          </Card>
-        </TabsContent>
-      </Tabs>
+          </div>
+          <div className="rounded-2xl border border-border/50 bg-card p-6">
+            <div className="skeleton h-48 w-full rounded-xl" />
+          </div>
+        </div>
+      ) : activeView === "dashboard" ? (
+        <ReportsDashboard
+          monthlyData={rpcMonthly || []}
+          topDebtors={rpcTop || []}
+          totalsByCurrency={rpcTotals || []}
+          currencies={curs}
+          people={allPeople}
+          categories={cats}
+        />
+      ) : (
+        <div className="space-y-4">
+          {/* Export Options */}
+          <div className="grid md:grid-cols-2 gap-4">
+            <button
+              onClick={exportCSV}
+              className="group relative overflow-hidden rounded-2xl border border-border/50 bg-gradient-to-br from-card to-background p-5 md:p-6 shadow-sm hover:shadow-elevated transition-all duration-300 text-right"
+            >
+              <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-primary to-primary/40" />
+              <div className="flex items-start gap-4">
+                <div className="size-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 duration-300">
+                  <FileText className="size-5" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-black text-[15px] text-foreground mb-1">تصدير CSV</h3>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    تصدير جميع المعاملات والمصروفات إلى ملف CSV لفتحه في Excel أو Google Sheets
+                  </p>
+                  <div className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-bold text-primary bg-primary/5 px-2.5 py-1 rounded-lg">
+                    <Download className="size-3.5" />
+                    تنزيل الملف
+                  </div>
+                </div>
+              </div>
+            </button>
 
-      <div className="grid grid-cols-2 gap-2 md:gap-3 md:max-w-md">
-        <Button onClick={exportCSV} variant="outline" className="h-9 md:h-11 text-xs md:text-sm"><FileText className="size-4 md:size-5" /> تصدير CSV</Button>
-        <Button onClick={exportPDF} className="h-9 md:h-11 text-xs md:text-sm bg-gradient-primary text-primary-foreground"><Download className="size-4 md:size-5" /> تصدير PDF</Button>
-      </div>
+            <button
+              onClick={exportPDF}
+              className="group relative overflow-hidden rounded-2xl border border-border/50 bg-gradient-to-br from-card to-background p-5 md:p-6 shadow-sm hover:shadow-elevated transition-all duration-300 text-right"
+            >
+              <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-danger to-danger/40" />
+              <div className="flex items-start gap-4">
+                <div className="size-12 rounded-xl bg-danger/10 text-danger flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 duration-300">
+                  <Download className="size-5" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-black text-[15px] text-foreground mb-1">تصدير PDF</h3>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    تصدير تقرير احترافي بصيغة PDF مع ملخص الأرصدة وأكبر الديون
+                  </p>
+                  <div className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-bold text-danger bg-danger/5 px-2.5 py-1 rounded-lg">
+                    <Download className="size-3.5" />
+                    تنزيل التقرير
+                  </div>
+                </div>
+              </div>
+            </button>
+          </div>
+
+          {/* Export Info */}
+          <div className="rounded-2xl border border-border/50 bg-gradient-to-br from-info/5 to-info/[0.02] p-4 md:p-5">
+            <div className="flex items-start gap-3">
+              <div className="size-8 rounded-lg bg-info/10 text-info flex items-center justify-center shrink-0">
+                <Sparkles className="size-4" />
+              </div>
+              <div className="text-[11px] md:text-[12px] text-muted-foreground leading-relaxed">
+                <span className="font-bold text-foreground">معلومات التصدير:</span> سيتم تصدير جميع المعاملات المسجلة مع التواريخ والمبالغ والعملات. يمكنك فتح ملف CSV في Excel أو أي برنامج جداول بيانات.
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
