@@ -6,6 +6,7 @@ export type NotifStatus = "pending" | "queued" | "sent" | "delivered" | "read" |
 export interface NotificationJob {
   id: string;
   user_id: string;
+  alert_id: string | null;
   category: NotifCategory;
   priority: NotifPriority;
   status: NotifStatus;
@@ -59,6 +60,7 @@ export interface NotificationPreference {
 export interface NotificationInboxItem {
   id: string;
   job_id: string;
+  alert_id: string | null;
   category: NotifCategory;
   title: string;
   body: string | null;

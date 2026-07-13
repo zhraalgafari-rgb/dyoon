@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { notificationService } from "@/lib/notifications";
 import type { NotificationInboxItem, NotifStats } from "@/lib/notifications/types";
 import { getInbox, getUnreadCount, markRead, markAllRead, archiveNotification, getStats } from "@/lib/notifications/server";
@@ -9,22 +10,7 @@ export function useNotifications(userId: string | undefined) {
   const [stats, setStats] = useState<NotifStats | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!userId) return;
-    setLoading(true);
-    Promise.all([
-      getInbox({ data: { userId } }),
-      getUnreadCount({ data: { userId } }),
-      getStats({ data: { userId } }),
-    ]).then(([inbox, count, s]) => {
-      setItems(inbox as NotificationInboxItem[]);
-      setUnreadCount(count as number);
-      setStats(s as NotifStats);
-      setLoading(false);
-    }).catch(() => setLoading(false));
-  }, [userId]);
-
-  const refresh = async () => {
+  const fetchAll = useCallback(async () => {
     if (!userId) return;
     const [inbox, count, s] = await Promise.all([
       getInbox({ data: { userId } }),
@@ -34,7 +20,41 @@ export function useNotifications(userId: string | undefined) {
     setItems(inbox as NotificationInboxItem[]);
     setUnreadCount(count as number);
     setStats(s as NotifStats);
-  };
+    setLoading(false);
+  }, [userId]);
+
+  // Initial load
+  useEffect(() => {
+    if (!userId) return;
+    setLoading(true);
+    fetchAll().catch(() => setLoading(false));
+  }, [userId, fetchAll]);
+
+  // Realtime subscription — inbox updates instantly when server fires alerts
+  useEffect(() => {
+    if (!userId) return;
+
+    const channel = supabase
+      .channel(`notifications:inbox:${userId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "notification_inbox",
+          filter: `user_id=eq.${userId}`,
+        },
+        () => {
+          // Re-fetch the full list so counts + items stay in sync
+          fetchAll();
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [userId, fetchAll]);
+
+  const refresh = fetchAll;
 
   const handleMarkRead = async (id: string) => {
     await markRead({ data: { userId: userId!, inboxId: id } });

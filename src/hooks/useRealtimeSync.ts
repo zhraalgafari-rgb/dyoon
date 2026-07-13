@@ -103,6 +103,21 @@ export function useRealtimeSync() {
         }
       )
 
+      // تغيرات صندوق الإشعارات الوارد — يُحدِّث عداد غير المقروء تلقائياً
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "notification_inbox",
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["notif-unread", user!.id] });
+          queryClient.invalidateQueries({ queryKey: ["notif-inbox", user!.id] });
+        }
+      )
+
       .subscribe();
 
     channelRef.current = channel;
