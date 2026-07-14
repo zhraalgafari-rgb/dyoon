@@ -45,9 +45,9 @@ export function useDashboardData(userId?: string) {
       if (userId) processRecurringFn().catch(console.error);
 
       const [peopleRes, balancesRes, currenciesRes] = await Promise.all([
-        supabase.from("people").select("*").eq("is_archived", false).order("created_at", { ascending: false }),
+        supabase.from("people").select("*").eq("is_archived", false).order("created_at", { ascending: false }).limit(10000),
         // استخدام view_person_balances_detailed التي تحافظ على الفصل الكامل للعملات
-        supabase.from("view_person_balances_detailed" as any).select("*").eq("user_id", userId),
+        supabase.from("view_person_balances_detailed" as any).select("*").eq("user_id", userId).limit(50000),
         supabase.from("currencies").select("*").order("is_base", { ascending: false }),
       ]);
       

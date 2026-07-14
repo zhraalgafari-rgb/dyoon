@@ -63,10 +63,10 @@ export function computeBalancesByCurrency(
   for (const slot of map.values()) {
     slot.baseEquivalent = slot.balance * (slot.currency.rate || 1);
   }
-  // Only return currencies that have activity OR are the base
+  // Only return currencies that have activity
   return Array.from(map.values())
-    .filter((s) => s.txCount > 0 || s.opening !== 0 || s.currency.is_base)
-    .sort((a, b) => Number(b.currency.is_base) - Number(a.currency.is_base));
+    .filter((s) => s.txCount > 0 || s.opening !== 0)
+    .sort((a, b) => a.currency.name.localeCompare(b.currency.name, "ar"));
 }
 
 /**
@@ -114,6 +114,6 @@ export function aggregateOwedOwePerCurrency(
       const s = map.get(c.id)!;
       return { currency: c, owed: s.owed, owe: s.owe, net: s.owed - s.owe };
     })
-    .filter((r) => r.owed > 0 || r.owe > 0 || r.currency.is_base)
-    .sort((a, b) => Number(b.currency.is_base) - Number(a.currency.is_base));
+    .filter((r) => r.owed > 0 || r.owe > 0)
+    .sort((a, b) => a.currency.name.localeCompare(b.currency.name, "ar"));
 }

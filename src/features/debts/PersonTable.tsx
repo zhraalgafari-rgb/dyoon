@@ -44,12 +44,10 @@ export function PersonTable({ rows, onEdit, onArchive, onDelete }: Props) {
           </thead>
           <tbody>
             {rows.map(({ person, balance, currencyBalances = [], currencies = [] }, i) => {
-              // إذا كان لديه أكثر من عملة، نُنشئ صفًا لكل عملة
-              const hasMulti = currencyBalances.length > 1;
               const displayRows = currencyBalances.length > 0 ? currencyBalances : null;
 
-              if (displayRows && hasMulti) {
-                // صف لكل عملة
+              if (displayRows) {
+                // صف لكل عملة للعميل
                 return displayRows.map((b, bi) => {
                   const curr = currencies.find((c) => c.id === b.currency_id);
                   const sym = curr?.symbol ?? "";
@@ -125,29 +123,12 @@ export function PersonTable({ rows, onEdit, onArchive, onDelete }: Props) {
                 });
               }
 
-              // عملة واحدة أو fallback
-              const singleBalance = displayRows?.[0] ?? null;
-              const isCredit = singleBalance ? singleBalance.net >= 0 : balance.net >= 0;
-              const settled = singleBalance
-                ? Math.abs(singleBalance.net) < 0.001
-                : Math.abs(balance.net) < 0.001;
-              const curr = currencies.find((c) => c.id === singleBalance?.currency_id);
-              const sym = curr?.symbol ?? "";
+              // إذا لم يكن لديه أرصدة (شخص جديد)
               const zebra = i % 2 === 0 ? "bg-card" : "bg-secondary/40";
-              const stateTint = settled
-                ? ""
-                : isCredit
-                  ? "border-r-2 border-r-success"
-                  : "border-r-2 border-r-danger";
-              const totalCredit = singleBalance?.totalCredit ?? (balance.totalCredit ?? 0);
-              const totalDebit = singleBalance?.totalDebit ?? (balance.totalDebit ?? 0);
-              const net = singleBalance?.net ?? balance.net;
-              const lastDate = singleBalance?.lastDate ?? balance.lastDate;
-
               return (
                 <tr
                   key={person.id}
-                  className={`${zebra} ${stateTint} hover:bg-primary/5 transition-colors [&>td]:border [&>td]:border-border`}
+                  className={`${zebra} hover:bg-primary/5 transition-colors [&>td]:border [&>td]:border-border`}
                 >
                   <td className="px-2 py-1.5 md:px-3 md:py-2 text-muted-foreground tabular-nums text-center border-l-0">{i + 1}</td>
                   <td className="px-2 py-1.5 md:px-3 md:py-2">
@@ -162,26 +143,13 @@ export function PersonTable({ rows, onEdit, onArchive, onDelete }: Props) {
                   <td className="px-2 py-1.5 md:px-3 md:py-2 hidden sm:table-cell text-muted-foreground tabular-nums" dir="ltr">
                     {person.phone || "—"}
                   </td>
-                  <td className="px-2 py-1.5 md:px-3 md:py-2 text-center tabular-nums text-muted-foreground">{balance.count}</td>
-                  <td className="px-2 py-1.5 md:px-3 md:py-2 text-left tabular-nums font-semibold text-success bg-success/5">
-                    {totalCredit > 0 ? <>{fmtMoney(totalCredit)} {sym && <span className="opacity-60 text-[8px]">{sym}</span>}</> : "—"}
-                  </td>
-                  <td className="px-2 py-1.5 md:px-3 md:py-2 text-left tabular-nums font-semibold text-danger bg-danger/5">
-                    {totalDebit > 0 ? <>{fmtMoney(totalDebit)} {sym && <span className="opacity-60 text-[8px]">{sym}</span>}</> : "—"}
-                  </td>
+                  <td className="px-2 py-1.5 md:px-3 md:py-2 text-center tabular-nums text-muted-foreground">0</td>
+                  <td className="px-2 py-1.5 md:px-3 md:py-2 text-left tabular-nums text-muted-foreground">—</td>
+                  <td className="px-2 py-1.5 md:px-3 md:py-2 text-left tabular-nums text-muted-foreground">—</td>
                   <td className="px-2 py-1.5 md:px-3 md:py-2 text-left">
-                    {settled ? (
-                      <span className="inline-block px-1.5 py-0.5 rounded-full bg-secondary text-muted-foreground text-[9px] md:text-[10px] font-bold border border-border/50">مسوّى</span>
-                    ) : (
-                      <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[10px] md:text-[11.5px] font-black tabular-nums ${isCredit ? "bg-success-soft text-success ring-1 ring-success/30" : "bg-danger-soft text-danger ring-1 ring-danger/30"}`}>
-                        {isCredit ? "" : "-"}{fmtMoney(Math.abs(net))}
-                        {sym && <span className="opacity-70 text-[8px]">{sym}</span>}
-                      </span>
-                    )}
+                    <span className="inline-block px-2 py-1 rounded-lg bg-secondary text-muted-foreground text-[10px] font-bold border border-border/50">جديد</span>
                   </td>
-                  <td className="px-2 py-1.5 md:px-3 md:py-2 text-center hidden xs:table-cell text-muted-foreground tabular-nums">
-                    {lastDate ? fmtDate(new Date(lastDate).toISOString()) : "—"}
-                  </td>
+                  <td className="px-2 py-1.5 md:px-3 md:py-2 text-center hidden xs:table-cell text-muted-foreground tabular-nums">—</td>
                   {hasActions && (
                     <td className="px-1 py-1 md:px-2 md:py-2 text-center border-r-0">
                       <RowActions

@@ -72,28 +72,21 @@ function ReportsPage() {
     enabled: !!user,
   });
 
-  const base = curs.find((c: any) => c.is_base) ?? curs[0];
   const people = allPeople as any[];
   const isLoading = loadingMonthly || loadingTop || loadingTotals;
 
-  // Calculate totals for PDF export
-  const totals = useMemo(() => {
-    const baseRow = (rpcTotals ?? []).find(
-      (rt: any) => curs.find((c: any) => c.id === rt.currency_id)?.is_base,
-    );
-    const owe = Number(baseRow?.total_owed ?? 0);
-    const owed = Number(baseRow?.total_owe ?? 0);
-    return { owe, owed, net: owed - owe };
-  }, [rpcTotals, curs]);
-
   const topPeople = useMemo(() => {
     const raw = rpcTop ?? [];
-    return raw.map((row: any) => ({
-      id: row.person_id,
-      name: people.find((x: any) => x.id === row.person_id)?.name ?? "—",
-      net: Number(row.net_base),
-    }));
-  }, [rpcTop, people]);
+    return raw.map((row: any) => {
+      const c = curs.find((c: any) => c.id === row.currency_id);
+      return {
+        id: row.person_id,
+        name: people.find((x: any) => x.id === row.person_id)?.name ?? "—",
+        net: Number(row.net ?? 0),
+        currency_name: c?.name ?? "",
+      };
+    });
+  }, [rpcTop, people, curs]);
 
   const exportCSV = async () => {
     if (people.length === 0) {
@@ -108,13 +101,13 @@ function ReportsPage() {
     toast.dismiss();
     const rows = [["نوع", "تاريخ", "المبلغ", "العملة", "شخص/تصنيف", "ملاحظة"]];
     for (const tx of (t ?? [])) {
-      const cur = curs.find((c) => c.id === tx.currency_id)?.name ?? "";
+      const cur = curs.find((c: any) => c.id === tx.currency_id)?.name ?? "";
       const person = people.find((p) => p.id === tx.person_id)?.name ?? "";
       rows.push([tx.direction === "credit" ? "له" : "عليه", fmtDate(tx.transaction_date), String(tx.amount), cur, person, tx.details ?? ""]);
     }
     for (const ex of (e ?? [])) {
-      const cur = curs.find((c) => c.id === ex.currency_id)?.name ?? "";
-      const cat = cats.find((c) => c.id === ex.category_id)?.name ?? "";
+      const cur = curs.find((c: any) => c.id === ex.currency_id)?.name ?? "";
+      const cat = cats.find((c: any) => c.id === ex.category_id)?.name ?? "";
       rows.push(["مصروف", fmtDate(ex.expense_date), String(ex.amount), cur, cat, ex.note ?? ""]);
     }
     const csv = "\uFEFF" + rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
@@ -132,13 +125,21 @@ function ReportsPage() {
     const doc = new jsPDF();
     doc.setFontSize(18); doc.text("Daftarak Report", 14, 20);
     doc.setFontSize(10); doc.text(`Generated: ${new Date().toISOString().slice(0, 10)}`, 14, 28);
-    doc.setFontSize(12); doc.text(`Total Owed to you: ${fmtMoney(totals.owed)} ${base?.name ?? ""}`, 14, 42);
-    doc.text(`Total You owe: ${fmtMoney(totals.owe)} ${base?.name ?? ""}`, 14, 50);
-    doc.text(`Net: ${fmtMoney(totals.net)}`, 14, 58);
-    doc.text("Top balances:", 14, 72);
-    let y = 80;
-    topPeople.forEach((p: { name: string; net: number }) => {
-      doc.text(`${p.name}: ${p.net >= 0 ? "+" : ""}${fmtMoney(p.net)}`, 14, y); y += 8;
+    
+    let y = 42;
+    doc.setFontSize(12);
+    (rpcTotals ?? []).forEach((rt: any) => {
+        const cname = curs.find((c: any) => c.id === rt.currency_id)?.name ?? "";
+        const owe = Number(rt.total_owed ?? 0);
+        const owed = Number(rt.total_owe ?? 0);
+        doc.text(`${cname} - Owed to you: ${fmtMoney(owe)} | You owe: ${fmtMoney(owed)} | Net: ${fmtMoney(owed - owe)}`, 14, y);
+        y += 8;
+    });
+
+    doc.text("Top balances:", 14, y + 6);
+    y += 14;
+    topPeople.forEach((p: any) => {
+      doc.text(`${p.name} (${p.currency_name}): ${p.net >= 0 ? "+" : ""}${fmtMoney(p.net)}`, 14, y); y += 8;
     });
     doc.save(`daftarak-report-${Date.now()}.pdf`);
     toast.success("تم التنزيل");
@@ -158,7 +159,7 @@ function ReportsPage() {
               التقارير والتحليلات
             </h1>
             <p className="text-[11px] md:text-[13px] text-muted-foreground font-medium mt-0.5">
-              نظرة شاملة على جميع معاملاتك بالـ {base?.name ?? "العملة الأساسية"}
+              نظرة شاملة على جميع معاملاتك بمختلف العملات
             </p>
           </div>
         </div>

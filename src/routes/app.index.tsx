@@ -80,7 +80,7 @@ function DebtsHome() {
 
   const { q, setQ, deferredQ, filter, setFilter, sort, setSort, filtered } = useDashboardFilter(
     people,
-    personBalances,
+    personCurrencyBalances,
   );
 
   const [visibleCount, setVisibleCount] = useState(30);
@@ -107,52 +107,10 @@ function DebtsHome() {
 
   const hasActiveBalances = rpcTotalsData.some((r: any) => r.owed > 0 || r.owe > 0);
 
-  // Calculate summary stats
-  const totalOwed = rpcTotalsData.reduce((sum: number, r: any) => sum + Number(r.total_owe || 0), 0);
-  const totalOwe = rpcTotalsData.reduce((sum: number, r: any) => sum + Number(r.total_owed || 0), 0);
-  const netTotal = totalOwed - totalOwe;
   const activePeople = people.filter((p) => {
-    const b = personBalances.get(p.id);
-    return b && Math.abs(b.net) > 0.001;
+    const balances = personCurrencyBalances.get(p.id);
+    return balances && balances.some(b => Math.abs(b.net) > 0.001);
   }).length;
-  const settledPeople = people.length - activePeople;
-
-  // Summary cards data
-  const summaryCards = [
-    {
-      title: "إجمالي له",
-      value: totalOwed,
-      icon: TrendingUp,
-      color: "success" as const,
-      subtitle: "المبالغ المستحقة لك",
-      percent: totalOwed + totalOwe > 0 ? (totalOwed / (totalOwed + totalOwe)) * 100 : 0,
-    },
-    {
-      title: "إجمالي عليه",
-      value: totalOwe,
-      icon: TrendingDown,
-      color: "danger" as const,
-      subtitle: "المبالغ المستحقة عليك",
-      percent: totalOwed + totalOwe > 0 ? (totalOwe / (totalOwed + totalOwe)) * 100 : 0,
-    },
-    {
-      title: "صافي الرصيد",
-      value: Math.abs(netTotal),
-      icon: DollarSign,
-      color: netTotal >= 0 ? "success" as const : "danger" as const,
-      subtitle: netTotal >= 0 ? "رصيد دائن (لك)" : "رصيد مدين (عليك)",
-      percent: 100,
-      isNet: true,
-    },
-    {
-      title: "العملاء",
-      value: activePeople,
-      icon: Activity,
-      color: "info" as const,
-      subtitle: `${settledPeople} مسوّى · ${people.length} إجمالي`,
-      percent: people.length > 0 ? (activePeople / people.length) * 100 : 0,
-    },
-  ];
 
   return (
     <div className="space-y-4 animate-fade-in-up">
@@ -167,92 +125,6 @@ function DebtsHome() {
           />
         </div>
       )}
-
-      {/* Summary Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3">
-        {summaryCards.map((card, i) => {
-          const Icon = card.icon;
-          const isPos = card.color === "success";
-          const isNeg = card.color === "danger";
-          return (
-            <div
-              key={card.title}
-              className="relative group overflow-hidden rounded-2xl border bg-gradient-to-br from-card to-background border-border/50 shadow-sm hover:shadow-elevated transition-all duration-300 animate-slide-up-fade"
-              style={{ animationDelay: `${i * 80}ms` }}
-            >
-              {/* Top color bar */}
-              <div
-                className={`h-0.5 w-full bg-gradient-to-r ${isPos
-                    ? "from-success to-success/40"
-                    : isNeg
-                      ? "from-danger to-danger/40"
-                      : "from-info to-info/40"
-                  }`}
-              />
-
-              <div className="p-3 md:p-4 space-y-2">
-                {/* Header */}
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] md:text-[11px] font-bold text-muted-foreground tracking-wide">
-                    {card.title}
-                  </span>
-                  <div
-                    className={`size-7 md:size-8 rounded-lg flex items-center justify-center transition-transform group-hover:scale-110 duration-300 ${isPos
-                        ? "bg-success/10 text-success"
-                        : isNeg
-                          ? "bg-danger/10 text-danger"
-                          : "bg-info/10 text-info"
-                      }`}
-                  >
-                    <Icon className="size-3.5 md:size-4" />
-                  </div>
-                </div>
-
-                {/* Value */}
-                <div
-                  className={`font-black text-[18px] md:text-[22px] tabular-nums leading-none tracking-tight ${isPos
-                      ? "text-success"
-                      : isNeg
-                        ? "text-danger"
-                        : "text-foreground"
-                    }`}
-                >
-                  {card.isNet && netTotal < 0 ? "-" : ""}
-                  {new Intl.NumberFormat("en-US").format(card.value)}
-                </div>
-
-                {/* Progress bar */}
-                <div className="relative h-1.5 bg-muted rounded-full overflow-hidden">
-                  <div
-                    className={`absolute inset-y-0 right-0 rounded-full transition-all duration-700 ease-out ${isPos
-                        ? "bg-success/60"
-                        : isNeg
-                          ? "bg-danger/60"
-                          : "bg-info/60"
-                      }`}
-                    style={{ width: `${card.percent}%` }}
-                  />
-                </div>
-
-                {/* Subtitle */}
-                <div className="flex items-center justify-between text-[9px] md:text-[10px]">
-                  <span className="text-muted-foreground font-medium">
-                    {card.subtitle}
-                  </span>
-                  {!card.isNet && (
-                    <span
-                      className={`font-bold tabular-nums ${isPos ? "text-success" : isNeg ? "text-danger" : "text-info"
-                        }`}
-                    >
-                      {card.percent.toFixed(0)}%
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
 
       {/* Header Section */}
       <div className="hidden md:flex items-center justify-between gap-4">

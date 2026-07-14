@@ -352,7 +352,7 @@ export async function exportPersonToExcel(personId: string, personName: string) 
   const [{ data: person }, { data: txs }, { data: currencies }, { data: company }, { data: openings }] = await Promise.all([
     supabase.from("people").select("id,name,phone").eq("id", personId).maybeSingle(),
     supabase.from("transactions").select("amount,direction,transaction_date,details,currency_id").eq("person_id", personId).order("transaction_date", { ascending: true }),
-    supabase.from("currencies").select("id,name,symbol,rate,is_base"),
+    supabase.from("currencies").select("id,name,symbol,rate"),
     supabase.from("company_profile").select("name,address,phone,email,tax_number,notes").maybeSingle(),
     supabase.from("opening_balances").select("currency_id,amount,direction").eq("person_id", personId),
   ]);
@@ -370,7 +370,7 @@ export async function exportPersonToExcel(personId: string, personName: string) 
 
   if (usedIds.size === 0) {
     // Nothing to export — build empty base-currency workbook so the user gets a valid file
-    const base = (currencies as CurRow[])?.find((c) => c.is_base) ?? (currencies as CurRow[])?.[0];
+    const base = (currencies as CurRow[])?.[0];
     if (!base) return;
     const buf = await buildStatementWorkbookForCurrency({ person: p, currency: base, txs: [], opening: 0, company: comp });
     const safe = (p.name || personName || "عميل").replace(/[\\/:*?"<>|]/g, "_");
@@ -378,11 +378,11 @@ export async function exportPersonToExcel(personId: string, personName: string) 
     return;
   }
 
-  // Order: base currency first
+  // Order: sort by name
   const ordered = Array.from(usedIds).sort((a, b) => {
-    const ab = cMap.get(a)?.is_base ? 1 : 0;
-    const bb = cMap.get(b)?.is_base ? 1 : 0;
-    return bb - ab;
+    const na = cMap.get(a)?.name || "";
+    const nb = cMap.get(b)?.name || "";
+    return na.localeCompare(nb, "ar");
   });
 
   const safe = (p.name || personName || "عميل").replace(/[\\/:*?"<>|]/g, "_");

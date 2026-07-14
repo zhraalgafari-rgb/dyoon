@@ -59,48 +59,55 @@ export function ReportsDashboard({
     categories = [],
 }: Props) {
     const [activeTab, setActiveTab] = useState<"overview" | "monthly" | "distribution">("overview");
-    const [selectedMonth, setSelectedMonth] = useState<string>("all");
+    const [selectedCurrencyId, setSelectedCurrencyId] = useState<string>("");
 
-    // Format monthly data for charts
+    // Initialize selected currency
+    useMemo(() => {
+        if (!selectedCurrencyId && currencies.length > 0) {
+            setSelectedCurrencyId(currencies[0].id);
+        }
+    }, [currencies, selectedCurrencyId]);
+
+    // Format monthly data for charts (filtered by selected currency)
     const chartData = useMemo(() => {
         const grouped: Record<string, any> = {};
-        monthlyData.forEach((r: any) => {
-            const month = r.expense_month?.slice(0, 7) || "unknown";
-            if (!grouped[month]) grouped[month] = { month, income: 0, expense: 0 };
-            const curr = currencies.find((c: any) => c.id === r.currency_id);
-            if (curr?.is_base) {
+        monthlyData
+            .filter(r => r.currency_id === selectedCurrencyId)
+            .forEach((r: any) => {
+                const month = r.expense_month?.slice(0, 7) || "unknown";
+                if (!grouped[month]) grouped[month] = { month, income: 0, expense: 0 };
                 if (r.total > 0) grouped[month].income += Number(r.total);
                 else grouped[month].expense += Math.abs(Number(r.total));
-            }
-        });
+            });
         return Object.values(grouped).sort((a: any, b: any) => a.month.localeCompare(b.month));
-    }, [monthlyData, currencies]);
+    }, [monthlyData, selectedCurrencyId]);
 
-    // Format top debtors
+    // Format top debtors (filtered by selected currency)
     const topDebtorsData = useMemo(() => {
         return (topDebtors || [])
+            .filter(r => r.currency_id === selectedCurrencyId)
             .map((r: any) => {
                 const person = people.find((p: any) => p.id === r.person_id);
                 return {
                     name: person?.name || "غير معروف",
-                    value: Math.abs(Number(r.net_base || 0)),
-                    isCredit: Number(r.net_base || 0) >= 0,
+                    value: Math.abs(Number(r.net || 0)),
+                    isCredit: Number(r.net || 0) >= 0,
                 };
             })
             .sort((a: any, b: any) => b.value - a.value)
             .slice(0, 10);
-    }, [topDebtors, people]);
+    }, [topDebtors, people, selectedCurrencyId]);
 
-    // Currency distribution
+    // Currency distribution (overall, not filtered by selected currency)
     const currencyData = useMemo(() => {
         return (totalsByCurrency || [])
-            .map((r: any) => {
+            .map((r: any, i: number) => {
                 const curr = currencies.find((c: any) => c.id === r.currency_id);
                 return {
                     name: curr?.symbol || curr?.name || "unknown",
-                    owed: Number(r.total_owe || 0),
-                    owe: Number(r.total_owed || 0),
-                    color: curr?.is_base ? "#3b82f6" : "#8b5cf6",
+                    owed: Number(r.total_owed || 0),
+                    owe: Number(r.total_owe || 0),
+                    color: COLORS[i % COLORS.length],
                 };
             })
             .filter((r: any) => r.owed > 0 || r.owe > 0);
@@ -220,6 +227,18 @@ export function ReportsDashboard({
                 </button>
 
                 <div className="flex-1" />
+
+                {currencies.length > 0 && (
+                    <select 
+                        value={selectedCurrencyId}
+                        onChange={(e) => setSelectedCurrencyId(e.target.value)}
+                        className="bg-transparent text-[12px] font-bold text-primary border-none outline-none cursor-pointer ms-2 focus:ring-0"
+                    >
+                        {currencies.map((c: any) => (
+                            <option key={c.id} value={c.id}>{c.name}</option>
+                        ))}
+                    </select>
+                )}
 
                 <button className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors" title="تصدير">
                     <DownloadCloud className="size-4" />

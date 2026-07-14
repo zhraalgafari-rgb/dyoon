@@ -121,17 +121,7 @@ export async function exportPersonStatementPDF(opts: {
     filteredTxs.some((t) => t.currency_id === c.id) || openings.some((o) => o.currency_id === c.id),
   );
   if (used.length === 0 && currencies.length > 0) used.push(currencies[0]);
-  used.sort((a, b) => Number(b.is_base) - Number(a.is_base));
-
-  // KPIs in base currency
-  let totalCredit = 0, totalDebit = 0;
-  for (const t of filteredTxs) {
-    const r = currencies.find((c) => c.id === t.currency_id)?.rate ?? 1;
-    if (t.direction === "credit") totalCredit += Number(t.amount) * r;
-    else totalDebit += Number(t.amount) * r;
-  }
-  const base = currencies.find((c) => c.is_base) ?? currencies[0];
-  const baseSym = base?.symbol ?? "";
+  used.sort((a, b) => a.name.localeCompare(b.name, "ar"));
 
   // Build per-currency sections HTML
   const sections = used.map((cur) => {
