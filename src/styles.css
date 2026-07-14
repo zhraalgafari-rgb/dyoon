@@ -402,8 +402,11 @@
 /* Mobile Performance Optimizations */
 @media (max-width: 768px) {
 
-  /* Disable expensive animations on mobile */
-  .animate-in {
+  /* Disable page load animations on mobile (but keep dialog animations) */
+  .space-y-3.md\\:animate-in,
+  .space-y-4.md\\:animate-in,
+  .space-y-3.md\\:fade-in,
+  .space-y-4.md\\:fade-in {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;
@@ -439,8 +442,8 @@
     contain: layout;
   }
 
-  /* Smooth but performant transitions */
-  * {
+  /* Smooth but performant transitions (exclude dialogs and critical UI) */
+  .transition-all:not([data-state]) {
     transition-duration: 0.15s !important;
   }
 }
