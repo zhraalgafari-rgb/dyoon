@@ -30,7 +30,7 @@ function SettingsPage() {
       const { data } = await supabase.from("profiles").select("display_name").eq("user_id", user.id).maybeSingle();
       setDisplayName(data?.display_name ?? "");
     })();
-    try { setColor(localStorage.getItem("daftarak.avatar.color")); } catch {}
+    try { setColor(localStorage.getItem("daftarak.avatar.color")); } catch { }
   }, [user]);
 
   const handleSignOut = async () => {
@@ -41,11 +41,11 @@ function SettingsPage() {
   return (
     <div className="space-y-2 animate-in fade-in duration-300">
       {/* Profile card */}
-      <Card className="p-1.5 flex items-center gap-2">
-        <Avatar name={displayName || user?.email || "?"} color={color} size="sm" />
+      <Card className="p-4 flex items-center gap-3">
+        <Avatar name={displayName || user?.email || "?"} color={color} size="md" />
         <div className="flex-1 min-w-0">
-          <div className="font-bold text-[11.5px] truncate leading-tight">{displayName || "ضيف"}</div>
-          <div className="text-[9.5px] text-muted-foreground truncate">{user?.email}</div>
+          <div className="font-bold text-sm truncate leading-tight">{displayName || "ضيف"}</div>
+          <div className="text-xs text-muted-foreground truncate">{user?.email}</div>
         </div>
       </Card>
 
@@ -66,14 +66,14 @@ function SettingsPage() {
           desc="السمة، اللون، حجم الخط"
           tone="accent"
         />
-        <Card className="border-0 shadow-none p-1 flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <div className="size-6 rounded-md bg-secondary text-primary flex items-center justify-center ring-1 ring-border">
-              {theme === "dark" ? <Moon className="size-3" /> : <Sun className="size-3" />}
+        <Card className="border-0 shadow-none p-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="size-8 rounded-md bg-secondary text-primary flex items-center justify-center ring-1 ring-border">
+              {theme === "dark" ? <Moon className="size-4" /> : <Sun className="size-4" />}
             </div>
             <div>
-              <div className="font-semibold text-[11.5px] leading-tight">الوضع الداكن</div>
-              <div className="text-[9.5px] text-muted-foreground">تبديل سريع</div>
+              <div className="font-semibold text-sm leading-tight">الوضع الداكن</div>
+              <div className="text-xs text-muted-foreground">تبديل سريع</div>
             </div>
           </div>
           <Switch checked={theme === "dark"} onCheckedChange={toggle} />
@@ -108,7 +108,7 @@ function SettingsPage() {
       </SettingsGroup>
 
       {/* Sign out */}
-      <Card className="p-1.5">
+      <Card className="p-3">
         <SettingsRow icon={LogOut} label="تسجيل الخروج" onClick={() => setConfirmOut(true)} danger />
       </Card>
 
