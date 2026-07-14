@@ -17,9 +17,10 @@ interface Props {
   newName: string;
   setNewName: (name: string) => void;
   disabled?: boolean;
+  allowCreate?: boolean;
 }
 
-export function PersonSelector({ people, personId, setPersonId, newName, setNewName, disabled }: Props) {
+export function PersonSelector({ people, personId, setPersonId, newName, setNewName, disabled, allowCreate = true }: Props) {
   const [open, setOpen] = useState(false);
   const selectedPerson = people.find((p) => p.id === personId);
 
@@ -47,7 +48,11 @@ export function PersonSelector({ people, personId, setPersonId, newName, setNewN
           />
           <CommandList>
             <CommandEmpty>
-              <div className="text-sm">سيُنشأ شخص جديد باسم "{newName}"</div>
+              {allowCreate && newName ? (
+                <div className="text-sm">سيُنشأ شخص جديد باسم "{newName}"</div>
+              ) : (
+                <div className="text-sm text-muted-foreground">لا توجد نتائج</div>
+              )}
             </CommandEmpty>
             <CommandGroup>
               {people.map((p) => (

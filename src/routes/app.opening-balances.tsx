@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { PersonSelector } from "@/components/PersonSelector";
 import { ArrowRight, Wallet, Plus, Trash2, Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { fmtMoney } from "@/lib/format";
@@ -29,6 +30,7 @@ function OpeningBalancesPage() {
   const [items, setItems] = useState<Opening[]>([]);
   const [loading, setLoading] = useState(true);
   const [personId, setPersonId] = useState("");
+  const [newName, setNewName] = useState("");
   const [currencyId, setCurrencyId] = useState("");
   const [amount, setAmount] = useState("");
   const [direction, setDirection] = useState<"credit" | "debit">("credit");
@@ -68,7 +70,7 @@ function OpeningBalancesPage() {
     setBusy(false);
     if (error) { toast.error(error.message); return; }
     toast.success("تم الحفظ");
-    setAmount(""); setNote("");
+    setPersonId(""); setNewName(""); setAmount(""); setNote("");
     load();
   };
 
@@ -120,12 +122,7 @@ function OpeningBalancesPage() {
         <div className="grid grid-cols-2 gap-2">
           <div className="space-y-1 col-span-2">
             <Label className="text-[10px]">العميل</Label>
-            <Select value={personId} onValueChange={setPersonId}>
-              <SelectTrigger className="h-8 text-[12px]"><SelectValue placeholder="اختر العميل" /></SelectTrigger>
-              <SelectContent>
-                {people.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
-              </SelectContent>
-            </Select>
+             <PersonSelector people={people} personId={personId} setPersonId={setPersonId} newName={newName} setNewName={setNewName} allowCreate={false} />
           </div>
           <div className="space-y-1">
             <Label className="text-[10px]">العملة</Label>

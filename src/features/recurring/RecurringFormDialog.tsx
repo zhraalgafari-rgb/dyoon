@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { PersonSelector } from "@/components/PersonSelector";
 import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -31,6 +32,7 @@ export function RecurringFormDialog({ open, onOpenChange, userId, curs, cats, pe
   const [currencyId, setCurrencyId] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [personId, setPersonId] = useState("");
+  const [newName, setNewName] = useState("");
   const [direction, setDirection] = useState<"credit" | "debit">("credit");
   const [frequency, setFrequency] = useState<"daily" | "weekly" | "monthly" | "yearly">("monthly");
   const [nextRun, setNextRun] = useState("");
@@ -41,7 +43,7 @@ export function RecurringFormDialog({ open, onOpenChange, userId, curs, cats, pe
     if (!open) return;
     setKind("expense"); setTitle(""); setAmount(""); setNote("");
     setCategoryId(cats[0]?.id ?? "");
-    setPersonId(""); setDirection("credit");
+    setPersonId(""); setNewName(""); setDirection("credit");
     setFrequency("monthly");
     const d = new Date(); d.setDate(d.getDate() + 1);
     setNextRun(d.toISOString().slice(0, 16));
@@ -116,10 +118,7 @@ export function RecurringFormDialog({ open, onOpenChange, userId, curs, cats, pe
             <>
               <div className="space-y-1.5">
                 <Label>الشخص</Label>
-                <Select value={personId} onValueChange={setPersonId}>
-                  <SelectTrigger><SelectValue placeholder="اختر" /></SelectTrigger>
-                  <SelectContent>{people.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
-                </Select>
+                <PersonSelector people={people} personId={personId} setPersonId={setPersonId} newName={newName} setNewName={setNewName} allowCreate={false} />
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <button onClick={() => setDirection("credit")} className={`p-2 rounded-xl border-2 text-xs font-semibold ${direction === "credit" ? "border-success bg-success-soft text-success" : "border-border"}`}>له (دائن)</button>

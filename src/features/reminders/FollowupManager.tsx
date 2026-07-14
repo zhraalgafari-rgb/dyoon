@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { PersonSelector } from "@/components/PersonSelector";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import { fmtDate, fmtTime, formatDistanceToNow } from "@/lib/format";
@@ -31,7 +32,8 @@ export function FollowupManager({ userId, people }: { userId: string; people: Pe
   const { user } = useAuth();
   const qc = useQueryClient();
 
-  const [personId, setPersonId] = useState<string>("none");
+  const [personId, setPersonId] = useState<string>("");
+  const [newName, setNewName] = useState("");
   const [dueDate, setDueDate] = useState(() => toLocalInput(new Date(Date.now() + 86400000)));
   const [note, setNote] = useState("");
   const [channel, setChannel] = useState<FollowupChannel>("whatsapp");
@@ -64,7 +66,7 @@ export function FollowupManager({ userId, people }: { userId: string; people: Pe
   };
 
   const doSchedule = async () => {
-    if (!user || personId === "none" || !note.trim()) return toast.error("اختر العميل واكتب الملاحظة");
+    if (!user || !personId || !note.trim()) return toast.error("اختر العميل واكتب الملاحظة");
     setBusy(true);
     try {
       await scheduleFollowup({
@@ -81,7 +83,7 @@ export function FollowupManager({ userId, people }: { userId: string; people: Pe
   };
 
   const doLog = async () => {
-    if (!user || personId === "none") return toast.error("اختر العميل");
+    if (!user || !personId) return toast.error("اختر العميل");
     setBusy(true);
     try {
       await logFollowupAttempt({
@@ -154,13 +156,7 @@ export function FollowupManager({ userId, people }: { userId: string; people: Pe
         <div className="grid grid-cols-2 gap-2">
           <div className="space-y-1">
             <Label className="text-[11px]">العميل</Label>
-            <Select value={personId} onValueChange={setPersonId}>
-              <SelectTrigger className="h-8 text-[12px]"><SelectValue placeholder="اختر" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">بدون</SelectItem>
-                {people.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
-              </SelectContent>
-            </Select>
+            <PersonSelector people={people} personId={personId} setPersonId={setPersonId} newName={newName} setNewName={setNewName} allowCreate={false} />
           </div>
           <div className="space-y-1">
             <Label className="text-[11px]">التاريخ والوقت</Label>
@@ -181,13 +177,7 @@ export function FollowupManager({ userId, people }: { userId: string; people: Pe
         <div className="grid grid-cols-2 gap-2">
           <div className="space-y-1">
             <Label className="text-[11px]">العميل</Label>
-            <Select value={personId} onValueChange={setPersonId}>
-              <SelectTrigger className="h-8 text-[12px]"><SelectValue placeholder="اختر" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">بدون</SelectItem>
-                {people.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
-              </SelectContent>
-            </Select>
+            <PersonSelector people={people} personId={personId} setPersonId={setPersonId} newName={newName} setNewName={setNewName} allowCreate={false} />
           </div>
           <div className="space-y-1">
             <Label className="text-[11px]">القناة</Label>

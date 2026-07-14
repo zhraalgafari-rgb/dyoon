@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { PersonSelector } from "@/components/PersonSelector";
 import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -32,6 +33,7 @@ export function ReminderFormDialog({ open, onOpenChange, editing, userId, people
   const [note, setNote] = useState("");
   const [date, setDate] = useState("");
   const [personId, setPersonId] = useState("");
+  const [newName, setNewName] = useState("");
   const [repeat, setRepeat] = useState<RepeatKind>("none");
   const [busy, setBusy] = useState(false);
 
@@ -44,7 +46,7 @@ export function ReminderFormDialog({ open, onOpenChange, editing, userId, people
       setRepeat((editing.repeat as RepeatKind) ?? "none");
       setDate(toLocalInput(editing.due_date));
     } else {
-      setTitle(""); setNote(""); setPersonId(""); setRepeat("none");
+      setTitle(""); setNote(""); setPersonId(""); setNewName(""); setRepeat("none");
       const d = new Date(); d.setDate(d.getDate() + 7); d.setHours(9, 0, 0, 0);
       setDate(toLocalInput(d.toISOString()));
     }
@@ -101,13 +103,7 @@ export function ReminderFormDialog({ open, onOpenChange, editing, userId, people
             </div>
             <div className="space-y-1.5">
               <Label>الشخص</Label>
-              <Select value={personId || "none"} onValueChange={(v) => setPersonId(v === "none" ? "" : v)}>
-                <SelectTrigger><SelectValue placeholder="بدون" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">بدون</SelectItem>
-                  {people.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <PersonSelector people={people} personId={personId} setPersonId={setPersonId} newName={newName} setNewName={setNewName} allowCreate={false} />
             </div>
           </div>
           <div className="space-y-1.5">
