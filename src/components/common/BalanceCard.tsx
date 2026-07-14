@@ -47,7 +47,7 @@ export function BalanceCard({ data, defaultOpen = false }: Props) {
       className={`w-full text-right rounded-xl border bg-gradient-to-br ${tone} shadow-sm hover:shadow-md active:scale-[0.98] md:transition-all overflow-hidden`}
     >
       {/* Header */}
-      <div className="px-2 py-1.5 flex items-center justify-between border-b border-border/40 bg-background/40">
+      <div className="px-2 py-1 flex items-center justify-between border-b border-border/40 bg-background/40">
         <div className="flex items-center gap-1 min-w-0">
           <Wallet className="size-3 text-muted-foreground shrink-0" />
           <span className="text-[10.5px] font-bold truncate">{data.currency.name}</span>
@@ -59,10 +59,10 @@ export function BalanceCard({ data, defaultOpen = false }: Props) {
       </div>
 
       {/* Net */}
-      <div className="px-2 py-1.5">
+      <div className="px-2 py-1">
         <div className="flex items-baseline justify-between gap-1">
-          <span className={`text-[8.5px] px-1 rounded ${tagBg} font-bold`}>{tag}</span>
-          <div className={`text-[15px] font-black tabular-nums ${netColor} truncate`}>
+          <span className={`text-[8px] px-1 rounded ${tagBg} font-bold`}>{tag}</span>
+          <div className={`text-[13px] font-black tabular-nums ${netColor} truncate`}>
             {fmtMoney(Math.abs(net))}
             <span className="text-[9px] mr-0.5 opacity-80">{data.currency.symbol}</span>
           </div>
@@ -70,20 +70,20 @@ export function BalanceCard({ data, defaultOpen = false }: Props) {
       </div>
 
       {/* Summary chips (always visible) */}
-      <div className="px-1.5 pb-1.5 grid grid-cols-2 gap-1">
-        <div className="rounded-md bg-success/10 px-1.5 py-1">
-          <div className="flex items-center gap-0.5 text-success text-[8.5px] font-bold leading-none">
-            <TrendingUp className="size-2.5" /> له
+      <div className="px-1.5 pb-1 grid grid-cols-2 gap-1">
+        <div className="rounded-md bg-success/10 px-1 py-0.5">
+          <div className="flex items-center gap-0.5 text-success text-[8px] font-bold leading-none">
+            <TrendingUp className="size-2.5 text-success/70" /> له
           </div>
-          <div className="text-success text-[10.5px] font-black tabular-nums leading-tight mt-0.5 truncate">
+          <div className="text-success text-[10px] font-black tabular-nums leading-tight mt-0.5 truncate">
             {fmtMoney(data.owed)}
           </div>
         </div>
-        <div className="rounded-md bg-danger/10 px-1.5 py-1">
-          <div className="flex items-center gap-0.5 text-danger text-[8.5px] font-bold leading-none">
-            <TrendingDown className="size-2.5" /> عليه
+        <div className="rounded-md bg-danger/10 px-1 py-0.5">
+          <div className="flex items-center gap-0.5 text-danger text-[8px] font-bold leading-none">
+            <TrendingDown className="size-2.5 text-danger/70" /> عليه
           </div>
-          <div className="text-danger text-[10.5px] font-black tabular-nums leading-tight mt-0.5 truncate">
+          <div className="text-danger text-[10px] font-black tabular-nums leading-tight mt-0.5 truncate">
             {fmtMoney(data.owe)}
           </div>
         </div>
@@ -91,7 +91,7 @@ export function BalanceCard({ data, defaultOpen = false }: Props) {
 
       {/* Expanded details */}
       {open && (
-        <div className="px-2 pb-2 pt-1 border-t border-border/40 bg-background/30 space-y-0.5 text-[9.5px]">
+        <div className="px-2 pb-2 pt-1 border-t border-border/40 bg-background/30 space-y-0.5 text-[9px]">
           {data.txCount !== undefined && (
             <Row label="عدد المعاملات" value={`${data.txCount}`} />
           )}
