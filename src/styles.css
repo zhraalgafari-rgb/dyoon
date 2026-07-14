@@ -398,3 +398,64 @@
     page-break-after: always;
   }
 }
+
+/* Mobile Performance Optimizations */
+@media (max-width: 768px) {
+
+  /* Disable expensive animations on mobile */
+  .animate-in {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  /* Disable backdrop blur on mobile - causes rendering issues */
+  .backdrop-blur,
+  .backdrop-blur-sm,
+  .backdrop-blur-md {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* Use solid backgrounds instead of blur for sticky elements */
+  .sticky {
+    background-color: var(--color-background) !important;
+  }
+
+  /* Reduce paint complexity */
+  .shadow-glow,
+  .shadow-elevated {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  /* Optimize table rendering */
+  table {
+    transform: translateZ(0);
+    will-change: auto;
+  }
+
+  /* Contain layout shifts */
+  .contain-layout {
+    contain: layout;
+  }
+
+  /* Smooth but performant transitions */
+  * {
+    transition-duration: 0.15s !important;
+  }
+}
+
+/* GPU acceleration for specific elements */
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Prevent layout thrashing */
+.contain-paint {
+  contain: layout paint;
+}
+
+.contain-content {
+  contain: layout paint size;
+}

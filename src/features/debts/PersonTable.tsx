@@ -28,7 +28,7 @@ export function PersonTable({ rows, onEdit, onArchive, onDelete }: Props) {
   return (
     <div className="rounded-lg border bg-card shadow-card overflow-hidden animate-in fade-in duration-200">
       <div className="overflow-x-auto">
-        <table className="w-full text-[10.5px] md:text-[12.5px] border-collapse border border-border">
+        <table className="w-full text-xs md:text-sm border-collapse border border-border">
           <thead className="bg-gradient-primary text-primary-foreground">
             <tr className="[&>th]:px-2 [&>th]:py-1.5 md:[&>th]:px-3 md:[&>th]:py-2 [&>th]:font-bold [&>th]:text-right [&>th]:whitespace-nowrap [&>th]:border [&>th]:border-white/20 shadow-sm">
               <th className="w-7 md:w-8 text-center">#</th>
@@ -77,30 +77,30 @@ export function PersonTable({ rows, onEdit, onArchive, onDelete }: Props) {
                             {person.name}
                           </Link>
                         ) : (
-                          <span className="text-muted-foreground text-[9px] pr-2">↳</span>
+                          <span className="text-muted-foreground text-xs pr-2">↳</span>
                         )}
                       </td>
                       <td className="px-2 py-1.5 md:px-3 md:py-2 hidden sm:table-cell text-muted-foreground tabular-nums" dir="ltr">
                         {bi === 0 ? (person.phone || "—") : (
-                          <span className="inline-block px-1 py-0.5 rounded bg-muted text-[8.5px] font-bold border">{curr?.name ?? sym}</span>
+                          <span className="inline-block px-1 py-0.5 rounded bg-muted text-xs font-bold border">{curr?.name ?? sym}</span>
                         )}
                       </td>
                       <td className="px-2 py-1.5 md:px-3 md:py-2 text-center tabular-nums text-muted-foreground">
                         {bi === 0 ? balance.count : ""}
                       </td>
                       <td className="px-2 py-1.5 md:px-3 md:py-2 text-left tabular-nums font-semibold text-success bg-success/5">
-                        {b.totalCredit > 0 ? <>{fmtMoney(b.totalCredit)} <span className="opacity-60 text-[8px]">{sym}</span></> : "—"}
+                        {b.totalCredit > 0 ? <>{fmtMoney(b.totalCredit)} <span className="opacity-60 text-xs">{sym}</span></> : "—"}
                       </td>
                       <td className="px-2 py-1.5 md:px-3 md:py-2 text-left tabular-nums font-semibold text-danger bg-danger/5">
-                        {b.totalDebit > 0 ? <>{fmtMoney(b.totalDebit)} <span className="opacity-60 text-[8px]">{sym}</span></> : "—"}
+                        {b.totalDebit > 0 ? <>{fmtMoney(b.totalDebit)} <span className="opacity-60 text-xs">{sym}</span></> : "—"}
                       </td>
                       <td className="px-2 py-1.5 md:px-3 md:py-2 text-left">
                         {settled ? (
-                          <span className="inline-block px-1.5 py-0.5 rounded-full bg-secondary text-muted-foreground text-[9px] md:text-[10px] font-bold border border-border/50">مسوّى</span>
+                          <span className="inline-block px-1.5 py-0.5 rounded-full bg-secondary text-muted-foreground text-xs font-bold border border-border/50">مسوّى</span>
                         ) : (
-                          <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[10px] md:text-[11.5px] font-black tabular-nums ${isCredit ? "bg-success-soft text-success ring-1 ring-success/30" : "bg-danger-soft text-danger ring-1 ring-danger/30"}`}>
+                          <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-xs font-black tabular-nums ${isCredit ? "bg-success-soft text-success ring-1 ring-success/30" : "bg-danger-soft text-danger ring-1 ring-danger/30"}`}>
                             {isCredit ? "" : "-"}{fmtMoney(Math.abs(b.net))}
-                            <span className="opacity-70 text-[8px]">{sym}</span>
+                            <span className="opacity-70 text-xs">{sym}</span>
                           </span>
                         )}
                       </td>
@@ -147,7 +147,7 @@ export function PersonTable({ rows, onEdit, onArchive, onDelete }: Props) {
                   <td className="px-2 py-1.5 md:px-3 md:py-2 text-left tabular-nums text-muted-foreground">—</td>
                   <td className="px-2 py-1.5 md:px-3 md:py-2 text-left tabular-nums text-muted-foreground">—</td>
                   <td className="px-2 py-1.5 md:px-3 md:py-2 text-left">
-                    <span className="inline-block px-2 py-1 rounded-lg bg-secondary text-muted-foreground text-[10px] font-bold border border-border/50">جديد</span>
+                    <span className="inline-block px-2 py-1 rounded-lg bg-secondary text-muted-foreground text-xs font-bold border border-border/50">جديد</span>
                   </td>
                   <td className="px-2 py-1.5 md:px-3 md:py-2 text-center hidden xs:table-cell text-muted-foreground tabular-nums">—</td>
                   {hasActions && (
@@ -164,7 +164,7 @@ export function PersonTable({ rows, onEdit, onArchive, onDelete }: Props) {
             })}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={hasActions ? 9 : 8} className="text-center py-8 text-muted-foreground text-[10px] md:text-[12px] bg-secondary/20">
+                <td colSpan={hasActions ? 9 : 8} className="text-center py-8 text-muted-foreground text-xs md:text-sm bg-secondary/20">
                   لا توجد بيانات
                 </td>
               </tr>

@@ -122,9 +122,9 @@ function AppLayout() {
       <div className="flex-1 flex flex-col min-h-screen relative w-full md:bg-background md:shadow-2xl md:border-x border-border/50">
         <header className="bg-gradient-hero text-white sticky top-0 z-30 shadow-elevated">
           <div className="w-full px-3 md:px-6 h-12 md:h-14 flex items-center justify-between gap-3">
-            <Link to="/app" className="flex items-center gap-2 font-black text-[14px] md:hidden">
+            <Link to="/app" className="flex items-center gap-2 font-black text-sm md:hidden">
               <div className="size-7 rounded-md bg-white/20 backdrop-blur flex items-center justify-center ring-1 ring-white/15">
-                <Wallet className="size-3.5" />
+                <Wallet className="size-4" />
               </div>
               دفترك
             </Link>
@@ -136,7 +136,7 @@ function AppLayout() {
               >
                 <Menu className="size-5" />
               </button>
-              <h1 className="font-bold text-[15px] md:text-[17px] tracking-tight">
+              <h1 className="font-bold text-sm md:text-base tracking-tight">
                 {sectionTitle(path)}
               </h1>
             </div>
@@ -144,12 +144,12 @@ function AppLayout() {
             <div className="flex items-center gap-1.5 md:gap-2">
               <button
                 onClick={() => setSearchOpen(true)}
-                className="hidden md:flex items-center gap-2 ps-3 pe-2 h-8 md:h-9 rounded-lg bg-white/15 hover:bg-white/25 backdrop-blur transition-colors text-white/90 text-[12px] md:text-[13px] font-semibold w-48 lg:w-56"
+                className="hidden md:flex items-center gap-2 ps-3 pe-2 h-8 md:h-9 rounded-lg bg-white/15 hover:bg-white/25 backdrop-blur transition-colors text-white/90 text-xs md:text-sm font-semibold w-48 lg:w-56"
                 aria-label="بحث"
               >
-                <Search className="size-3.5 md:size-4" />
+                <Search className="size-4" />
                 <span className="opacity-80">ابحث...</span>
-                <kbd className="ms-auto text-[9px] md:text-[10px] bg-white/20 rounded px-1.5 py-0.5 font-sans">
+                <kbd className="ms-auto text-xs bg-white/20 rounded px-1.5 py-0.5 font-sans">
                   /
                 </kbd>
               </button>
@@ -165,14 +165,14 @@ function AppLayout() {
                 className="p-2 md:p-2.5 rounded-md hover:bg-white/10 transition-colors"
                 aria-label="تبديل المظهر"
               >
-                {isDark ? <Sun className="size-4 md:size-[18px]" /> : <Moon className="size-4 md:size-[18px]" />}
+                {isDark ? <Sun className="size-4" /> : <Moon className="size-4" />}
               </button>
               <Link
                 to="/app/notifications"
                 className="relative p-2 md:p-2.5 rounded-md hover:bg-white/10 transition-colors"
                 aria-label="الإشعارات"
               >
-                <Bell className="size-4 md:size-[18px]" />
+                <Bell className="size-4" />
                 {(pending ?? 0) > 0 && (
                   <span className="absolute top-1 right-1">
                     <BadgeCount count={pending ?? 0} tone="danger" />

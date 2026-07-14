@@ -33,8 +33,8 @@ export function BalanceCard({ data, defaultOpen = false }: Props) {
   const tone = isCredit
     ? "from-success/15 to-success/5 border-success/30"
     : isDebit
-    ? "from-danger/15 to-danger/5 border-danger/30"
-    : "from-muted to-card border-border";
+      ? "from-danger/15 to-danger/5 border-danger/30"
+      : "from-muted to-card border-border";
 
   const netColor = isCredit ? "text-success" : isDebit ? "text-danger" : "text-foreground";
   const tag = isCredit ? "له" : isDebit ? "عليه" : "متوازن";
@@ -44,7 +44,7 @@ export function BalanceCard({ data, defaultOpen = false }: Props) {
     <button
       type="button"
       onClick={() => setOpen((v) => !v)}
-      className={`w-full text-right rounded-xl border bg-gradient-to-br ${tone} shadow-sm hover:shadow-md active:scale-[0.98] transition-all overflow-hidden`}
+      className={`w-full text-right rounded-xl border bg-gradient-to-br ${tone} shadow-sm hover:shadow-md active:scale-[0.98] md:transition-all overflow-hidden`}
     >
       {/* Header */}
       <div className="px-2 py-1.5 flex items-center justify-between border-b border-border/40 bg-background/40">

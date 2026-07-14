@@ -24,14 +24,14 @@ export function MultiCurrencyTotals({ rpcTotals, currencies }: Props) {
   if (rows.length === 0) return null;
 
   return (
-    <div className="space-y-1.5 md:space-y-2">
+    <div className="space-y-2 md:space-y-3">
       <div className="flex items-center justify-between px-1">
-        <div className="text-[10px] md:text-[12px] font-bold text-muted-foreground tracking-wide">
+        <div className="text-xs font-bold text-muted-foreground tracking-wide">
           الأرصدة حسب العملة
         </div>
-        <div className="text-[9px] md:text-[11px] text-muted-foreground tabular-nums">{rows.length} عملة</div>
+        <div className="text-xs text-muted-foreground tabular-nums">{rows.length} عملة</div>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-1.5 md:gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 md:gap-2">
         {rows.map((r) => (
           <BalanceCardV2
             key={r.currency.id}

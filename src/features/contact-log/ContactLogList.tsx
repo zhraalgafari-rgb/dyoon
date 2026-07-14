@@ -9,23 +9,23 @@ import { ListSkeleton } from "@/components/Skeleton";
 import { toast } from "sonner";
 
 const CHANNEL_META: Record<string, { icon: React.ReactNode; label: string; color: string }> = {
-  whatsapp: { icon: <MessageCircle className="size-3.5" />, label: "واتساب",     color: "bg-green-500/10 text-green-600 border-green-500/20" },
-  call:      { icon: <Phone className="size-3.5" />,          label: "مكالمة",     color: "bg-blue-500/10 text-blue-600 border-blue-500/20" },
-  sms:       { icon: <Smartphone className="size-3.5" />,     label: "رسالة نصية", color: "bg-purple-500/10 text-purple-600 border-purple-500/20" },
-  email:     { icon: <Mail className="size-3.5" />,           label: "بريد",       color: "bg-orange-500/10 text-orange-600 border-orange-500/20" },
-  reminder:  { icon: <Bell className="size-3.5" />,           label: "تذكير",      color: "bg-yellow-500/10 text-yellow-700 border-yellow-500/20" },
-  note:      { icon: <FileText className="size-3.5" />,       label: "ملاحظة",     color: "bg-secondary text-foreground border-border" },
-  other:     { icon: <FileText className="size-3.5" />,       label: "أخرى",       color: "bg-secondary text-foreground border-border" },
+  whatsapp: { icon: <MessageCircle className="size-3.5" />, label: "واتساب", color: "bg-green-500/10 text-green-600 border-green-500/20" },
+  call: { icon: <Phone className="size-3.5" />, label: "مكالمة", color: "bg-blue-500/10 text-blue-600 border-blue-500/20" },
+  sms: { icon: <Smartphone className="size-3.5" />, label: "رسالة نصية", color: "bg-purple-500/10 text-purple-600 border-purple-500/20" },
+  email: { icon: <Mail className="size-3.5" />, label: "بريد", color: "bg-orange-500/10 text-orange-600 border-orange-500/20" },
+  reminder: { icon: <Bell className="size-3.5" />, label: "تذكير", color: "bg-yellow-500/10 text-yellow-700 border-yellow-500/20" },
+  note: { icon: <FileText className="size-3.5" />, label: "ملاحظة", color: "bg-secondary text-foreground border-border" },
+  other: { icon: <FileText className="size-3.5" />, label: "أخرى", color: "bg-secondary text-foreground border-border" },
 };
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  sent:      { label: "تم الإرسال",   color: "text-blue-500" },
-  delivered: { label: "تم التسليم",   color: "text-teal-500" },
-  read:      { label: "تمت القراءة",  color: "text-green-500" },
-  replied:   { label: "رد",           color: "text-emerald-600" },
-  no_answer: { label: "لا إجابة",     color: "text-muted-foreground" },
-  busy:      { label: "مشغول",        color: "text-orange-500" },
-  failed:    { label: "فشل",          color: "text-danger" },
+  sent: { label: "تم الإرسال", color: "text-blue-500" },
+  delivered: { label: "تم التسليم", color: "text-teal-500" },
+  read: { label: "تمت القراءة", color: "text-green-500" },
+  replied: { label: "رد", color: "text-emerald-600" },
+  no_answer: { label: "لا إجابة", color: "text-muted-foreground" },
+  busy: { label: "مشغول", color: "text-orange-500" },
+  failed: { label: "فشل", color: "text-danger" },
 };
 
 function fmtDateTime(iso: string) {
@@ -202,7 +202,7 @@ export function ContactLogList({ personId }: Props) {
       {/* Timeline grouped by date */}
       {grouped.map(([date, items]) => (
         <div key={date} className="space-y-0">
-          <div className="flex items-center gap-2 py-2 sticky top-0 bg-background/80 backdrop-blur-sm z-10">
+          <div className="flex items-center gap-2 py-2 sticky top-0 bg-background z-10 md:bg-background/80 md:backdrop-blur-sm">
             <div className="h-px flex-1 bg-border" />
             <span className="text-[10px] font-black text-primary bg-primary/10 ring-1 ring-primary/20 px-3 py-1 rounded-full whitespace-nowrap">
               {date}

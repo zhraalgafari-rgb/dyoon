@@ -55,7 +55,7 @@ export function BalanceCardV2({ data, defaultOpen = false, index = 0 }: Props) {
                             {currency.symbol}
                         </div>
                         <div className="text-right">
-                            <div className="font-bold text-sm md:text-base text-foreground leading-tight">
+                            <div className="font-bold text-sm text-foreground leading-tight">
                                 {currency.name}
                             </div>
                             <div className="text-xs text-muted-foreground font-medium">
@@ -66,14 +66,13 @@ export function BalanceCardV2({ data, defaultOpen = false, index = 0 }: Props) {
 
                     <div className="flex items-center gap-2">
                         <div className="text-right">
-                            <div className={`font-black text-[16px] md:text-[18px] tabular-nums leading-none tracking-tight ${isPositive ? 'text-success' : 'text-danger'
+                            <div className={`font-black text-base md:text-lg tabular-nums leading-none tracking-tight ${isPositive ? 'text-success' : 'text-danger'
                                 }`}>
                                 {isPositive ? '' : '-'}{fmtMoney(Math.abs(net))}
                             </div>
                         </div>
                         <ChevronDown
-                            className={`size-4 text-muted-foreground transition-transform duration-300 ${open ? 'rotate-180' : ''
-                                }`}
+                            className={`size-4 text-muted-foreground transition-transform duration-300 ${open ? 'rotate-180' : ''}`}
                         />
                     </div>
                 </button>
@@ -97,7 +96,7 @@ export function BalanceCardV2({ data, defaultOpen = false, index = 0 }: Props) {
                             <TrendingUp className="size-3.5 text-success/70" />
                             له
                         </div>
-                        <div className="tabular-nums font-black text-sm md:text-base text-success">
+                        <div className="tabular-nums font-black text-sm text-success">
                             {fmtMoney(owed)}
                         </div>
                         <div className="text-xs text-muted-foreground mt-0.5">
@@ -110,7 +109,7 @@ export function BalanceCardV2({ data, defaultOpen = false, index = 0 }: Props) {
                             <TrendingDown className="size-3.5 text-danger/70" />
                             عليه
                         </div>
-                        <div className="tabular-nums font-black text-sm md:text-base text-danger">
+                        <div className="tabular-nums font-black text-sm text-danger">
                             {fmtMoney(owe)}
                         </div>
                         <div className="text-xs text-muted-foreground mt-0.5">

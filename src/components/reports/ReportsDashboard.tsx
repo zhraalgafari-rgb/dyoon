@@ -176,15 +176,15 @@ export function ReportsDashboard({
                             <div className={`h-0.5 w-full bg-gradient-to-r ${isPos ? "from-success to-success/40" : "from-danger to-danger/40"}`} />
                             <div className="p-3 md:p-4 space-y-1.5">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-[10px] font-bold text-muted-foreground">{card.title}</span>
-                                    <div className={`size-7 md:size-8 rounded-lg flex items-center justify-center ${isPos ? "bg-success/10 text-success" : "bg-danger/10 text-danger"}`}>
-                                        <Icon className="size-3.5" />
+                                    <span className="text-xs font-bold text-muted-foreground">{card.title}</span>
+                                    <div className={`size-8 rounded-lg flex items-center justify-center ${isPos ? "bg-success/10 text-success" : "bg-danger/10 text-danger"}`}>
+                                        <Icon className="size-4" />
                                     </div>
                                 </div>
-                                <div className={`font-black text-[18px] md:text-[22px] tabular-nums leading-none ${isPos ? "text-success" : "text-danger"}`}>
+                                <div className={`font-black text-lg md:text-xl tabular-nums leading-none ${isPos ? "text-success" : "text-danger"}`}>
                                     {new Intl.NumberFormat("en-US").format(card.value)}
                                 </div>
-                                <div className="text-[9px] text-muted-foreground font-medium truncate">
+                                <div className="text-xs text-muted-foreground font-medium truncate">
                                     {card.subtitle}
                                 </div>
                             </div>
@@ -197,42 +197,42 @@ export function ReportsDashboard({
             <div className="flex items-center gap-2 border-b border-border/50 pb-1">
                 <button
                     onClick={() => setActiveTab("overview")}
-                    className={`px-3 py-2 text-[11px] md:text-[12px] font-bold rounded-t-lg transition-colors ${activeTab === "overview"
-                            ? "text-primary border-b-2 border-primary bg-primary/5"
-                            : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                    className={`px-3 py-2 text-sm font-bold rounded-t-lg transition-colors ${activeTab === "overview"
+                        ? "text-primary border-b-2 border-primary bg-primary/5"
+                        : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
                         }`}
                 >
-                    <BarChart3 className="size-3.5 inline me-1.5" />
+                    <BarChart3 className="size-4 inline me-1.5" />
                     نظرة عامة
                 </button>
                 <button
                     onClick={() => setActiveTab("monthly")}
-                    className={`px-3 py-2 text-[11px] md:text-[12px] font-bold rounded-t-lg transition-colors ${activeTab === "monthly"
-                            ? "text-primary border-b-2 border-primary bg-primary/5"
-                            : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                    className={`px-3 py-2 text-sm font-bold rounded-t-lg transition-colors ${activeTab === "monthly"
+                        ? "text-primary border-b-2 border-primary bg-primary/5"
+                        : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
                         }`}
                 >
-                    <LineChart className="size-3.5 inline me-1.5" />
+                    <LineChart className="size-4 inline me-1.5" />
                     تحليلات شهرية
                 </button>
                 <button
                     onClick={() => setActiveTab("distribution")}
-                    className={`px-3 py-2 text-[11px] md:text-[12px] font-bold rounded-t-lg transition-colors ${activeTab === "distribution"
-                            ? "text-primary border-b-2 border-primary bg-primary/5"
-                            : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                    className={`px-3 py-2 text-sm font-bold rounded-t-lg transition-colors ${activeTab === "distribution"
+                        ? "text-primary border-b-2 border-primary bg-primary/5"
+                        : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
                         }`}
                 >
-                    <PieChart className="size-3.5 inline me-1.5" />
+                    <PieChart className="size-4 inline me-1.5" />
                     توزيع العملات
                 </button>
 
                 <div className="flex-1" />
 
                 {currencies.length > 0 && (
-                    <select 
+                    <select
                         value={selectedCurrencyId}
                         onChange={(e) => setSelectedCurrencyId(e.target.value)}
-                        className="bg-transparent text-[12px] font-bold text-primary border-none outline-none cursor-pointer ms-2 focus:ring-0"
+                        className="bg-transparent text-xs font-bold text-primary border-none outline-none cursor-pointer ms-2 focus:ring-0"
                     >
                         {currencies.map((c: any) => (
                             <option key={c.id} value={c.id}>{c.name}</option>
@@ -255,21 +255,21 @@ export function ReportsDashboard({
                     <div className="rounded-2xl border border-border/50 bg-card p-4 md:p-6 shadow-sm">
                         <div className="flex items-center justify-between mb-4">
                             <div>
-                                <h3 className="font-black text-[15px] md:text-[17px] text-foreground">
+                                <h3 className="font-black text-lg md:text-xl text-foreground">
                                     الإيرادات والمصروفات
                                 </h3>
-                                <p className="text-[10px] md:text-[11px] text-muted-foreground mt-0.5">
+                                <p className="text-xs text-muted-foreground mt-0.5">
                                     تحليل شهري لآخر {chartData.length} شهر
                                 </p>
                             </div>
                             <div className="flex items-center gap-3">
                                 <div className="flex items-center gap-1.5">
                                     <span className="size-2.5 rounded-full bg-success" />
-                                    <span className="text-[10px] font-bold text-muted-foreground">إيرادات</span>
+                                    <span className="text-xs font-bold text-muted-foreground">إيرادات</span>
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                     <span className="size-2.5 rounded-full bg-danger" />
-                                    <span className="text-[10px] font-bold text-muted-foreground">مصروفات</span>
+                                    <span className="text-xs font-bold text-muted-foreground">مصروفات</span>
                                 </div>
                             </div>
                         </div>
@@ -316,10 +316,10 @@ export function ReportsDashboard({
                     {/* Top Debtors Table */}
                     <div className="rounded-2xl border border-border/50 bg-card p-4 md:p-6 shadow-sm">
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-black text-[15px] md:text-[17px] text-foreground">
+                            <h3 className="font-black text-lg md:text-xl text-foreground">
                                 أكبر 10 مدينين/دائنين
                             </h3>
-                            <span className="text-[10px] text-muted-foreground font-bold tabular-nums">
+                            <span className="text-xs text-muted-foreground font-bold tabular-nums">
                                 {topDebtorsData.length} شخص
                             </span>
                         </div>
@@ -330,24 +330,24 @@ export function ReportsDashboard({
                                     className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-secondary/50 transition-colors animate-slide-up-fade"
                                     style={{ animationDelay: `${i * 40}ms` }}
                                 >
-                                    <div className={`size-8 rounded-lg flex items-center justify-center font-black text-[11px] ${d.isCredit ? "bg-success/10 text-success" : "bg-danger/10 text-danger"
+                                    <div className={`size-8 rounded-lg flex items-center justify-center font-black text-sm ${d.isCredit ? "bg-success/10 text-success" : "bg-danger/10 text-danger"
                                         }`}>
                                         {i + 1}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <div className="text-[13px] font-bold text-foreground truncate">{d.name}</div>
-                                        <div className="text-[10px] text-muted-foreground font-medium">
+                                        <div className="text-sm font-bold text-foreground truncate">{d.name}</div>
+                                        <div className="text-xs text-muted-foreground font-medium">
                                             {d.isCredit ? "دائن" : "مدين"}
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-1.5">
-                                        <span className={`font-black text-[13px] tabular-nums ${d.isCredit ? "text-success" : "text-danger"}`}>
+                                        <span className={`font-black text-sm tabular-nums ${d.isCredit ? "text-success" : "text-danger"}`}>
                                             {d.isCredit ? "" : "-"}{new Intl.NumberFormat("en-US").format(d.value)}
                                         </span>
                                         {d.isCredit ? (
-                                            <TrendingUp className="size-3.5 text-success" />
+                                            <TrendingUp className="size-4 text-success" />
                                         ) : (
-                                            <TrendingDown className="size-3.5 text-danger" />
+                                            <TrendingDown className="size-4 text-danger" />
                                         )}
                                     </div>
                                 </div>
@@ -361,21 +361,21 @@ export function ReportsDashboard({
                 <div className="rounded-2xl border border-border/50 bg-card p-4 md:p-6 shadow-sm">
                     <div className="flex items-center justify-between mb-4">
                         <div>
-                            <h3 className="font-black text-[15px] md:text-[17px] text-foreground">
+                            <h3 className="font-black text-lg md:text-xl text-foreground">
                                 الاتجاهات الشهرية
                             </h3>
-                            <p className="text-[10px] md:text-[11px] text-muted-foreground mt-0.5">
+                            <p className="text-xs text-muted-foreground mt-0.5">
                                 تحليل خط الاتجاه للإيرادات والمصروفات
                             </p>
                         </div>
                         <div className="flex items-center gap-3">
                             <div className="flex items-center gap-1.5">
                                 <span className="size-2.5 rounded-full bg-success" />
-                                <span className="text-[10px] font-bold text-muted-foreground">إيرادات</span>
+                                <span className="text-xs font-bold text-muted-foreground">إيرادات</span>
                             </div>
                             <div className="flex items-center gap-1.5">
                                 <span className="size-2.5 rounded-full bg-danger" />
-                                <span className="text-[10px] font-bold text-muted-foreground">مصروفات</span>
+                                <span className="text-xs font-bold text-muted-foreground">مصروفات</span>
                             </div>
                         </div>
                     </div>
@@ -432,7 +432,7 @@ export function ReportsDashboard({
             {activeTab === "distribution" && currencyData.length > 0 && (
                 <div className="grid md:grid-cols-2 gap-4">
                     <div className="rounded-2xl border border-border/50 bg-card p-4 md:p-6 shadow-sm">
-                        <h3 className="font-black text-[15px] md:text-[17px] text-foreground mb-4">
+                        <h3 className="font-black text-lg md:text-xl text-foreground mb-4">
                             توزيع الأرصدة حسب العملة
                         </h3>
                         <div className="h-64">
@@ -460,7 +460,7 @@ export function ReportsDashboard({
                                     />
                                     <Legend
                                         formatter={(value: string) => (
-                                            <span className="text-[11px] font-bold text-foreground">{value}</span>
+                                            <span className="text-sm font-bold text-foreground">{value}</span>
                                         )}
                                     />
                                 </RechartsPie>
@@ -469,7 +469,7 @@ export function ReportsDashboard({
                     </div>
 
                     <div className="rounded-2xl border border-border/50 bg-card p-4 md:p-6 shadow-sm">
-                        <h3 className="font-black text-[15px] md:text-[17px] text-foreground mb-4">
+                        <h3 className="font-black text-lg md:text-xl text-foreground mb-4">
                             تفاصيل العملات
                         </h3>
                         <div className="space-y-3">
@@ -478,13 +478,13 @@ export function ReportsDashboard({
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2">
                                             <span className="size-2.5 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                                            <span className="text-[12px] font-bold text-foreground">{c.name}</span>
+                                            <span className="text-sm font-bold text-foreground">{c.name}</span>
                                         </div>
-                                        <span className="text-[11px] font-black tabular-nums text-foreground/80">
+                                        <span className="text-sm font-black tabular-nums text-foreground/80">
                                             {new Intl.NumberFormat("en-US").format(c.owed + c.owe)}
                                         </span>
                                     </div>
-                                    <div className="flex items-center gap-1 text-[10px]">
+                                    <div className="flex items-center gap-1 text-xs">
                                         <span className="text-success font-bold">
                                             له: {new Intl.NumberFormat("en-US").format(c.owed)}
                                         </span>

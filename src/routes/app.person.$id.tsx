@@ -208,7 +208,7 @@ function PersonPage() {
   };
 
   return (
-    <div className="space-y-3 animate-in fade-in duration-300">
+    <div className="space-y-3 md:animate-in md:fade-in md:duration-300">
       <PersonActionsBar
         onPdf={() =>
           exportPersonStatementPDF({
@@ -241,10 +241,10 @@ function PersonPage() {
       <div className="flex items-center gap-2">
         <div className="grid grid-cols-4 gap-1 rounded-xl bg-secondary/60 p-1 ring-1 ring-border flex-1">
           {[
-            { v: "timeline" as const,    label: "المعاملات", icon: ClipboardList },
-            { v: "contact" as const,     label: "التواصل",   icon: MessageSquare },
-            { v: "attachments" as const, label: "المرفقات",  icon: Paperclip },
-            { v: "insights" as const,    label: "تحليلات",   icon: BarChart3 },
+            { v: "timeline" as const, label: "المعاملات", icon: ClipboardList },
+            { v: "contact" as const, label: "التواصل", icon: MessageSquare },
+            { v: "attachments" as const, label: "المرفقات", icon: Paperclip },
+            { v: "insights" as const, label: "تحليلات", icon: BarChart3 },
           ].map((t) => {
             const Icon = t.icon;
             const active = tab === t.v;
@@ -253,8 +253,8 @@ function PersonPage() {
                 key={t.v}
                 onClick={() => setTab(t.v)}
                 className={`inline-flex items-center justify-center gap-1 rounded-lg px-1.5 py-1.5 md:px-2 md:py-2 text-[10.5px] md:text-[12px] font-semibold transition ${active
-                    ? "bg-card text-primary shadow-sm ring-1 ring-primary/30"
-                    : "text-muted-foreground hover:text-foreground"
+                  ? "bg-card text-primary shadow-sm ring-1 ring-primary/30"
+                  : "text-muted-foreground hover:text-foreground"
                   }`}
               >
                 <Icon className="size-3.5 md:size-4" /> {t.label}

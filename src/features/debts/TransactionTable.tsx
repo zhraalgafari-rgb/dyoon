@@ -36,8 +36,8 @@ function dueState(due: string | null | undefined, is_paid?: boolean): "none" | "
 
 export function TransactionTable<T extends Tx>({ txs, currencies, running, onEdit, onDelete, onPay }: Props<T>) {
   return (
-    <div className="rounded-xl border-2 border-border bg-card shadow-card overflow-hidden">
-      <div className="overflow-x-auto">
+    <div className="rounded-xl border-2 border-border bg-card shadow-card overflow-hidden md:overflow-visible">
+      <div className="overflow-x-auto md:overflow-x-visible">
         <table className="w-full text-[11px] md:text-[12.5px] border-collapse" dir="rtl">
           <thead>
             <tr className="bg-gradient-to-l from-primary/15 via-primary/10 to-primary/5 text-foreground">
@@ -91,9 +91,9 @@ export function TransactionTable<T extends Tx>({ txs, currencies, running, onEdi
                     <div className="truncate text-foreground/90">{t.details || "—"}</div>
                     {t.due_date && (
                       <span className={`mt-0.5 inline-flex items-center gap-0.5 text-[9px] md:text-[10px] font-bold px-1 py-0.5 rounded ${state === "paid" ? "bg-success-soft text-success" :
-                          state === "overdue" ? "bg-danger-soft text-danger" :
-                            state === "soon" ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" :
-                              "bg-secondary text-muted-foreground"
+                        state === "overdue" ? "bg-danger-soft text-danger" :
+                          state === "soon" ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" :
+                            "bg-secondary text-muted-foreground"
                         }`}>
                         {state === "paid" ? <CheckCircle2 className="size-2.5 md:size-3" /> : <Clock className="size-2.5 md:size-3" />}
                         {fmtDate(t.due_date)}
