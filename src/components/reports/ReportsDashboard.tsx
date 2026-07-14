@@ -175,7 +175,7 @@ export function ReportsDashboard({
                                     </div>
                                 </div>
                                 <div className={`font-black text-[18px] md:text-[22px] tabular-nums leading-none ${isPos ? "text-success" : "text-danger"}`}>
-                                    {new Intl.NumberFormat("ar-SA").format(card.value)}
+                                    {new Intl.NumberFormat("en-US").format(card.value)}
                                 </div>
                                 <div className="text-[9px] text-muted-foreground font-medium truncate">
                                     {card.subtitle}
@@ -272,7 +272,7 @@ export function ReportsDashboard({
                                         tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
                                         axisLine={false}
                                         tickLine={false}
-                                        tickFormatter={(v) => new Intl.NumberFormat("ar-SA", { notation: "compact" }).format(v)}
+                                        tickFormatter={(v) => new Intl.NumberFormat("en-US", { notation: "compact" }).format(v)}
                                     />
                                     <Tooltip
                                         contentStyle={{
@@ -323,7 +323,7 @@ export function ReportsDashboard({
                                     </div>
                                     <div className="flex items-center gap-1.5">
                                         <span className={`font-black text-[13px] tabular-nums ${d.isCredit ? "text-success" : "text-danger"}`}>
-                                            {d.isCredit ? "" : "-"}{new Intl.NumberFormat("ar-SA").format(d.value)}
+                                            {d.isCredit ? "" : "-"}{new Intl.NumberFormat("en-US").format(d.value)}
                                         </span>
                                         {d.isCredit ? (
                                             <TrendingUp className="size-3.5 text-success" />
@@ -388,7 +388,7 @@ export function ReportsDashboard({
                                     tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
                                     axisLine={false}
                                     tickLine={false}
-                                    tickFormatter={(v) => new Intl.NumberFormat("ar-SA", { notation: "compact" }).format(v)}
+                                    tickFormatter={(v) => new Intl.NumberFormat("en-US", { notation: "compact" }).format(v)}
                                 />
                                 <Tooltip
                                     contentStyle={{
@@ -462,16 +462,16 @@ export function ReportsDashboard({
                                             <span className="text-[12px] font-bold text-foreground">{c.name}</span>
                                         </div>
                                         <span className="text-[11px] font-black tabular-nums text-foreground/80">
-                                            {new Intl.NumberFormat("ar-SA").format(c.owed + c.owe)}
+                                            {new Intl.NumberFormat("en-US").format(c.owed + c.owe)}
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-1 text-[10px]">
                                         <span className="text-success font-bold">
-                                            له: {new Intl.NumberFormat("ar-SA").format(c.owed)}
+                                            له: {new Intl.NumberFormat("en-US").format(c.owed)}
                                         </span>
                                         <span className="text-muted-foreground">·</span>
                                         <span className="text-danger font-bold">
-                                            عليه: {new Intl.NumberFormat("ar-SA").format(c.owe)}
+                                            عليه: {new Intl.NumberFormat("en-US").format(c.owe)}
                                         </span>
                                     </div>
                                     <div className="relative h-1.5 bg-muted rounded-full overflow-hidden">

@@ -258,6 +258,7 @@ export const PersonRowV2 = React.memo(function PersonRowV2({
                                     <button
                                         onClick={(e) => {
                                             e.preventDefault();
+                                            e.stopPropagation();
                                             setShowActions(!showActions);
                                         }}
                                         className="p-1.5 rounded-lg hover:bg-secondary/80 transition-colors text-muted-foreground hover:text-foreground"
@@ -272,6 +273,7 @@ export const PersonRowV2 = React.memo(function PersonRowV2({
                                                 <button
                                                     onClick={(e) => {
                                                         e.preventDefault();
+                                                        e.stopPropagation();
                                                         onEdit(person);
                                                         setShowActions(false);
                                                     }}
@@ -285,6 +287,7 @@ export const PersonRowV2 = React.memo(function PersonRowV2({
                                                 <button
                                                     onClick={(e) => {
                                                         e.preventDefault();
+                                                        e.stopPropagation();
                                                         onArchive(person);
                                                         setShowActions(false);
                                                     }}
@@ -298,6 +301,7 @@ export const PersonRowV2 = React.memo(function PersonRowV2({
                                                 <button
                                                     onClick={(e) => {
                                                         e.preventDefault();
+                                                        e.stopPropagation();
                                                         onDelete(person);
                                                         setShowActions(false);
                                                     }}

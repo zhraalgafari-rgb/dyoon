@@ -44,12 +44,20 @@ export function useDashboardData(userId?: string) {
       // Fire-and-forget background recurring process
       if (userId) processRecurringFn().catch(console.error);
 
-      const [{ data: p }, { data: dbBalances }, { data: c }] = await Promise.all([
+      const [peopleRes, balancesRes, currenciesRes] = await Promise.all([
         supabase.from("people").select("*").eq("is_archived", false).order("created_at", { ascending: false }),
         // استخدام view_person_balances_detailed التي تحافظ على الفصل الكامل للعملات
-        supabase.from("view_person_balances_detailed" as any).select("*"),
+        supabase.from("view_person_balances_detailed" as any).select("*").eq("user_id", userId),
         supabase.from("currencies").select("*").order("is_base", { ascending: false }),
       ]);
+      
+      const p = peopleRes.data;
+      const dbBalances = balancesRes.data || [];
+      const c = currenciesRes.data;
+
+      if (peopleRes.error) console.error("Error fetching people:", peopleRes.error);
+      if (balancesRes.error) console.error("Error fetching balances:", balancesRes.error);
+      if (currenciesRes.error) console.error("Error fetching currencies:", currenciesRes.error);
 
       // استدعاء RPC للحصول على الإجماليات (يعتمد على auth.uid() داخل الدالة الآن)
       let rpcTotals: any[] = [];
@@ -68,8 +76,8 @@ export function useDashboardData(userId?: string) {
       // Map<person_id, PersonCurrencyBalance[]> للعرض متعدد العملات
       const multiMap = new Map<string, PersonCurrencyBalance[]>();
 
-      if (dbBalances) {
-        for (const row of dbBalances as any[]) {
+      if (dbBalances && Array.isArray(dbBalances)) {
+        for (const row of dbBalances) {
           const pid = row.person_id;
           const entry: PersonCurrencyBalance = {
             currency_id: row.currency_id,

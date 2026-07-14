@@ -93,7 +93,7 @@ export function DesktopSidebar({ isOpen }: Props) {
                 له
               </div>
               <div className="text-[11px] font-black text-success tabular-nums leading-none">
-                {new Intl.NumberFormat("ar-SA").format(quickStats.totalCredit)}
+                {new Intl.NumberFormat("en-US").format(quickStats.totalCredit)}
               </div>
             </div>
             <div className="flex flex-col items-center text-center">
@@ -102,7 +102,7 @@ export function DesktopSidebar({ isOpen }: Props) {
                 عليه
               </div>
               <div className="text-[11px] font-black text-danger tabular-nums leading-none">
-                {new Intl.NumberFormat("ar-SA").format(quickStats.totalDebit)}
+                {new Intl.NumberFormat("en-US").format(quickStats.totalDebit)}
               </div>
             </div>
             <div className="col-span-2 pt-1.5 mt-1.5 border-t border-border/30 flex items-center justify-center gap-1.5">

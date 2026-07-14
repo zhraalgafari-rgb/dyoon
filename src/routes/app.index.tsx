@@ -218,7 +218,7 @@ function DebtsHome() {
                     }`}
                 >
                   {card.isNet && netTotal < 0 ? "-" : ""}
-                  {new Intl.NumberFormat("ar-SA").format(card.value)}
+                  {new Intl.NumberFormat("en-US").format(card.value)}
                 </div>
 
                 {/* Progress bar */}

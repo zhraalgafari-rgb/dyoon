@@ -30,8 +30,8 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
 
 function fmtDateTime(iso: string) {
   const d = new Date(iso);
-  const date = d.toLocaleDateString("ar-SA", { year: "numeric", month: "short", day: "numeric" });
-  const time = d.toLocaleTimeString("ar-SA", { hour: "2-digit", minute: "2-digit" });
+  const date = d.toLocaleDateString("ar-SA-u-nu-latn", { year: "numeric", month: "short", day: "numeric" });
+  const time = d.toLocaleTimeString("ar-SA-u-nu-latn", { hour: "2-digit", minute: "2-digit" });
   return { date, time };
 }
 
@@ -150,7 +150,7 @@ export function ContactLogList({ personId }: Props) {
   const grouped = useMemo(() => {
     const g = new Map<string, ContactLog[]>();
     for (const l of filtered) {
-      const d = new Date(l.logged_at).toLocaleDateString("ar-SA", {
+      const d = new Date(l.logged_at).toLocaleDateString("ar-SA-u-nu-latn", {
         weekday: "long", year: "numeric", month: "long", day: "numeric",
       });
       const arr = g.get(d) ?? [];

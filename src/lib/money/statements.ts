@@ -16,7 +16,7 @@ interface StatementData {
 
 export function buildShareText({ personName, company, txsCount, balancesByCurrency }: StatementData): string {
   const companyName = company?.name?.trim() || "دفترك";
-  const today = new Date().toLocaleDateString("ar-EG");
+  const today = new Date().toLocaleDateString("en-GB");
   const lines: string[] = [];
   
   lines.push("✨ *السلام عليكم ورحمة الله وبركاته* ✨");
@@ -35,7 +35,7 @@ export function buildShareText({ personName, company, txsCount, balancesByCurren
   } else {
     for (const b of nonZero) {
       const tag = b.balance > 0 ? "🟢 لكم (دائن)" : b.balance < 0 ? "🔴 عليكم (مدين)" : "⚪ مسدد بالكامل";
-      const amt = Math.abs(b.balance).toLocaleString("ar-EG", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const amt = Math.abs(b.balance).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       lines.push(`▪️ ${b.currency.name}: *${amt} ${b.currency.symbol}*  ${tag}`);
     }
   }

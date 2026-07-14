@@ -16,7 +16,7 @@ function fmt(n: number) {
   return new Intl.NumberFormat("en-US", { maximumFractionDigits: 2, minimumFractionDigits: 2 }).format(n);
 }
 function fmtInt(n: number) {
-  return new Intl.NumberFormat("ar-EG", { maximumFractionDigits: 0 }).format(n);
+  return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(n);
 }
 function dmy(d: string | Date) {
   const x = typeof d === "string" ? new Date(d) : d;

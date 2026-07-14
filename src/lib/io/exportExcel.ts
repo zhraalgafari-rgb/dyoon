@@ -44,7 +44,7 @@ export async function exportAllToExcel(userId: string, fileName = `daftarak-${Da
   });
 
   const txSheet = ((txs as TxRow[]) ?? []).map((t) => ({
-    "التاريخ": new Date(t.transaction_date).toLocaleDateString("ar-EG"),
+    "التاريخ": new Date(t.transaction_date).toLocaleDateString("en-GB"),
     "الاسم": pMap.get(t.person_id ?? "")?.name ?? "—",
     "النوع": t.direction === "credit" ? "له" : "عليه",
     "المبلغ": Number(t.amount),
@@ -53,7 +53,7 @@ export async function exportAllToExcel(userId: string, fileName = `daftarak-${Da
   }));
 
   const expSheet = ((expenses as unknown as ExpRow[]) ?? []).map((e) => ({
-    "التاريخ": new Date(e.expense_date).toLocaleDateString("ar-EG"),
+    "التاريخ": new Date(e.expense_date).toLocaleDateString("en-GB"),
     "التصنيف": catMap.get(e.category_id)?.name ?? "—",
     "المبلغ": Number(e.amount),
     "العملة": cMap.get(e.currency_id)?.name ?? "",
@@ -93,10 +93,12 @@ const thinBorder = {
 };
 
 // English digits, thousands separator, 2 decimals, red negatives, dash for zero
-const NUM_FMT = '#,##0.00;[Red]-#,##0.00;"-"';
+const NUM_FMT = '[$-en-US]#,##0.00;[Red][$-en-US]-#,##0.00;[$-en-US]"-"';
+const INT_FMT = '[$-en-US]0';
+const DATE_FMT = '[$-en-US]dd/mm/yyyy';
 
-// Force English (Latin) digits for dates and formatted numbers
-const fmtDateEN = (d: string | Date) =>
+// Force English (Latin) digits for strings where we can't use native excel types easily
+const fmtDateENStr = (d: string | Date) =>
   new Date(d).toLocaleDateString("en-GB"); // dd/MM/yyyy in Latin digits
 const fmtNumEN = (n: number) =>
   n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -178,7 +180,7 @@ async function buildStatementWorkbookForCurrency(opts: {
   /* ============ CUSTOMER INFO BLOCK ============ */
   const infoRows: [string, string | number, string, string | number][] = [
     ["اسم العميل:", p.name || "—", "رقم الجوال:", p.phone ?? "—"],
-    ["تاريخ الكشف:", fmtDateEN(new Date()), "عدد الحركات:", list.length],
+    ["تاريخ الكشف:", new Date(), "عدد الحركات:", list.length],
   ];
 
   let r = 5;
@@ -202,6 +204,11 @@ async function buildStatementWorkbookForCurrency(opts: {
       c.font = { name: "Arial", size: 11, color: { argb: "FF111827" } };
       c.alignment = { horizontal: "right", vertical: "middle", readingOrder: "rtl" };
       c.border = thinBorder;
+      // Force English numbers for values (like count or date)
+      if (typeof v1 === "number") ws.getCell(`B${r}`).numFmt = INT_FMT;
+      if (v1 instanceof Date) ws.getCell(`B${r}`).numFmt = DATE_FMT;
+      if (typeof v2 === "number") ws.getCell(`E${r}`).numFmt = INT_FMT;
+      if (v2 instanceof Date) ws.getCell(`E${r}`).numFmt = DATE_FMT;
     }
     ws.getRow(r).height = 22;
     r++;
@@ -240,7 +247,11 @@ async function buildStatementWorkbookForCurrency(opts: {
       c.alignment = { horizontal: i === 2 ? "right" : "center", vertical: "middle", readingOrder: "rtl" };
       c.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFFFF7ED" } };
       c.font = { name: "Arial", size: 10, italic: true, bold: true, color: { argb: "FF9A3412" } };
-      if (i >= 3) c.numFmt = NUM_FMT;
+      if (i >= 3) {
+         c.numFmt = NUM_FMT;
+      } else if (typeof v === "number") {
+         c.numFmt = INT_FMT;
+      }
     });
     ws.getRow(row).height = 20;
     row++;
@@ -253,9 +264,9 @@ async function buildStatementWorkbookForCurrency(opts: {
     const credit = t.direction === "credit";
     if (credit) { balance += amt; totalCredit += amt; } else { balance -= amt; totalDebit += amt; }
 
-    const cells: (string | number | null)[] = [
+    const cells: (string | number | Date | null)[] = [
       idx + 1,
-      fmtDateEN(t.transaction_date),
+      new Date(t.transaction_date),
       t.details ?? "—",
       credit ? null : amt,
       credit ? amt : null,
@@ -270,6 +281,8 @@ async function buildStatementWorkbookForCurrency(opts: {
       c.font = { name: "Arial", size: 10, color: { argb: "FF111827" } };
       if (zebra) c.fill = { type: "pattern", pattern: "solid", fgColor: { argb: COL_ZEBRA } };
       if (i >= 3) c.numFmt = NUM_FMT;
+      else if (i === 1) c.numFmt = DATE_FMT; // Date formatting
+      else if (i === 0) c.numFmt = INT_FMT; // Index
       if (i === 3 && v != null) c.font = { name: "Arial", size: 10, bold: true, color: { argb: COL_DEBIT } };
       if (i === 4 && v != null) c.font = { name: "Arial", size: 10, bold: true, color: { argb: COL_CREDIT } };
       if (i === 5) c.font = { name: "Arial", size: 10, bold: true, color: { argb: balance >= 0 ? COL_CREDIT : COL_DEBIT } };
@@ -321,7 +334,7 @@ async function buildStatementWorkbookForCurrency(opts: {
   // Footer
   ws.mergeCells(`A${row}:F${row}`);
   const ft = ws.getCell(`A${row}`);
-  ft.value = `${comp?.name ? comp.name + "  •  " : ""}تم الإنشاء بواسطة دفترك  •  ${fmtDateEN(new Date())}`;
+  ft.value = `${comp?.name ? comp.name + "  •  " : ""}تم الإنشاء بواسطة دفترك  •  ${fmtDateENStr(new Date())}`;
   ft.font = { name: "Arial", size: 9, italic: true, color: { argb: "FF6B7280" } };
   ft.alignment = { horizontal: "center", vertical: "middle", readingOrder: "rtl" };
   ws.getRow(row).height = 18;
