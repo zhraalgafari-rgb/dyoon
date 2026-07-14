@@ -1,4 +1,4 @@
-import { Users, Wallet, BarChart3, Settings, Tags, PieChart, BellRing, Coins } from "lucide-react";
+import { Users, Wallet, BarChart3, Settings, Tags, PieChart, BellRing, Coins, Bell } from "lucide-react";
 
 export interface NavItem {
   to: string;
@@ -8,7 +8,7 @@ export interface NavItem {
   badgeKey?: "reminders";
 }
 
-const SETTINGS_PREFIXES = ["/app/settings", "/app/currencies", "/app/reminders", "/app/recurring"];
+const SETTINGS_PREFIXES = ["/app/settings", "/app/currencies", "/app/recurring"];
 
 export const debtsItems: NavItem[] = [
   { to: "/app", label: "الديون", icon: Users, match: (p) => p === "/app" || p === "/app/" },
@@ -17,6 +17,13 @@ export const debtsItems: NavItem[] = [
     label: "المتابعة",
     icon: BellRing,
     match: (p) => p.startsWith("/app/followup"),
+    badgeKey: "reminders",
+  },
+  {
+    to: "/app/reminders",
+    label: "التذكيرات",
+    icon: Bell,
+    match: (p) => p.startsWith("/app/reminders"),
     badgeKey: "reminders",
   },
   {

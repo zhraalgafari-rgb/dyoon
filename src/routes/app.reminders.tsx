@@ -111,12 +111,13 @@ function RemindersPage() {
   ];
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4 md:space-y-5">
       <PageHeader icon={Bell} title="التذكيرات" subtitle={`${counts.overdue + counts.today + counts.upcoming} نشط · ${counts.done} مكتمل`} back="/app" />
 
-      <div className="flex items-center gap-1.5">
-        <Button size="sm" variant="outline" onClick={sync} disabled={syncing} className="h-8 text-[11px] gap-1">
-          <RefreshCw className={`size-3 ${syncing ? "animate-spin" : ""}`} /> مزامنة من الديون
+      <div className="flex items-center gap-2 md:gap-3">
+        <Button size="sm" variant="outline" onClick={sync} disabled={syncing} className="h-9 md:h-10 text-xs md:text-sm gap-1.5 md:gap-2">
+          <RefreshCw className={`size-3.5 md:size-4 ${syncing ? "animate-spin" : ""}`} />
+          مزامنة من الديون
         </Button>
         {user && (
           <ReminderFormDialog
@@ -130,17 +131,18 @@ function RemindersPage() {
         )}
       </div>
 
-      <div className="flex gap-1 overflow-x-auto -mx-1 px-1 pb-1">
+      <div className="flex gap-2 overflow-x-auto -mx-1 px-1 pb-1">
         {TABS.map((t) => (
           <button
             key={t.id}
             onClick={() => setFilter(t.id)}
-            className={`shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors flex items-center gap-1 ${
-              filter === t.id ? "bg-primary text-primary-foreground" : "bg-secondary hover:bg-secondary/70"
-            }`}
+            className={`shrink-0 px-3 md:px-4 py-2 md:py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all duration-200 flex items-center gap-1.5 md:gap-2 ${filter === t.id
+                ? "bg-gradient-primary text-primary-foreground shadow-glow scale-105"
+                : "bg-secondary hover:bg-secondary/70 hover:scale-105"
+              }`}
           >
             <span>{t.label}</span>
-            <span className={`text-[10px] font-bold ${filter === t.id ? "opacity-80" : t.tone}`}>{t.count}</span>
+            <span className={`text-[11px] md:text-xs font-black ${filter === t.id ? "opacity-90" : t.tone}`}>{t.count}</span>
           </button>
         ))}
       </div>
@@ -148,7 +150,7 @@ function RemindersPage() {
       {filtered.length === 0 ? (
         <EmptyState icon={AlarmClock} title="لا توجد تذكيرات" description="أضف تذكيراً أو زامن من الديون التي لها تاريخ استحقاق" />
       ) : (
-        <div className="space-y-1.5 animate-in fade-in">
+        <div className="space-y-2 md:space-y-3 animate-in fade-in">
           {filtered.map((r) => (
             <ReminderCard
               key={r.id}

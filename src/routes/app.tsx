@@ -119,7 +119,7 @@ function AppLayout() {
     <div className="min-h-screen bg-background md:bg-muted/30 md:flex flex-row">
       <DesktopSidebar isOpen={sidebarOpen} />
 
-      <div className="flex-1 flex flex-col min-h-screen relative w-full lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl lg:mx-auto md:bg-background md:shadow-2xl md:border-x border-border/50">
+      <div className="flex-1 flex flex-col min-h-screen relative w-full md:bg-background md:shadow-2xl md:border-x border-border/50">
         <header className="bg-gradient-hero text-white sticky top-0 z-30 shadow-elevated">
           <div className="w-full px-3 md:px-6 h-12 md:h-14 flex items-center justify-between gap-3">
             <Link to="/app" className="flex items-center gap-2 font-black text-[14px] md:hidden">
