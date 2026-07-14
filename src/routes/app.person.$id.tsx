@@ -13,6 +13,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { toast } from "sonner";
 import { AddTransactionDialog } from "@/components/AddTransactionDialog";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
+import { FabButton } from "@/components/common/FabButton";
 import { exportPersonStatementPDF } from "@/lib/io/exportPdf";
 import { exportPersonToExcel } from "@/lib/io/exportExcel";
 import { PersonActionsBar } from "@/features/debts/person/PersonActionsBar";
@@ -321,16 +322,13 @@ function PersonPage() {
         </div>
       )}
 
-      <button
+      <FabButton
         onClick={() => {
           setEditingTx(null);
           setOpenAdd(true);
         }}
-        aria-label="إضافة معاملة"
-        className="fixed bottom-20 left-4 z-20 size-12 rounded-full bg-gradient-primary text-primary-foreground shadow-glow flex items-center justify-center hover:scale-105 active:scale-95 transition-transform md:hidden"
-      >
-        <Plus className="size-5" />
-      </button>
+        label="إضافة معاملة"
+      />
 
       <AddTransactionDialog
         open={openAdd}

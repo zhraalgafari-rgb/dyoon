@@ -12,7 +12,6 @@ import { useTheme } from "@/lib/theme";
 import { usePendingCount } from "@/hooks/usePendingCount";
 import { syncRemindersFn } from "@/lib/jobs.functions";
 import { registerServiceWorker } from "@/lib/push";
-import { SmartAssistant } from "@/components/SmartAssistant";
 import { useRealtimeSync } from "@/hooks/useRealtimeSync";
 
 export const Route = createFileRoute("/app")({ component: AppLayout });
@@ -194,7 +193,6 @@ function AppLayout() {
       </div>
 
       <GlobalSearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
-      <SmartAssistant />
     </div>
   );
 }
