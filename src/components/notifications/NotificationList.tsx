@@ -5,14 +5,14 @@ import type { NotificationInboxItem } from "@/lib/notifications/types";
 import { EmptyState } from "@/components/EmptyState";
 
 const CATEGORY_LABEL: Record<string, { label: string; color: string }> = {
-  reminder:          { label: "تذكير",          color: "bg-primary/10 text-primary" },
-  overdue:           { label: "دين متأخر",       color: "bg-danger/10 text-danger" },
-  payment_received:  { label: "تم استلام دفعة", color: "bg-success/10 text-success" },
-  payment_sent:      { label: "تم إرسال دفعة",  color: "bg-blue-500/10 text-blue-600" },
-  recurring:         { label: "متكرر",           color: "bg-purple-500/10 text-purple-600" },
-  backup:            { label: "نسخة احتياطية",   color: "bg-orange-500/10 text-orange-600" },
-  system:            { label: "النظام",           color: "bg-secondary text-foreground" },
-  marketing:         { label: "عرض",             color: "bg-yellow-400/10 text-yellow-700" },
+  reminder: { label: "تذكير", color: "bg-primary/10 text-primary" },
+  overdue: { label: "دين متأخر", color: "bg-danger/10 text-danger" },
+  payment_received: { label: "تم استلام دفعة", color: "bg-success/10 text-success" },
+  payment_sent: { label: "تم إرسال دفعة", color: "bg-blue-500/10 text-blue-600" },
+  recurring: { label: "متكرر", color: "bg-purple-500/10 text-purple-600" },
+  backup: { label: "نسخة احتياطية", color: "bg-orange-500/10 text-orange-600" },
+  system: { label: "النظام", color: "bg-secondary text-foreground" },
+  marketing: { label: "عرض", color: "bg-yellow-400/10 text-yellow-700" },
 };
 
 interface Props {
@@ -49,13 +49,13 @@ export function NotificationList({ items, unreadCount, loading, onMarkRead, onMa
     <div className="space-y-2">
       {/* Header */}
       <div className="flex items-center justify-between px-1">
-        <div className="text-[12px] font-bold text-muted-foreground">
+        <div className="text-sm font-bold text-muted-foreground">
           {items.length} إشعار{unreadCount > 0 && ` · ${unreadCount} غير مقروء`}
         </div>
         {unreadCount > 0 && (
           <button
             onClick={onMarkAllRead}
-            className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline font-semibold"
+            className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline font-semibold"
           >
             <CheckCheck className="size-3.5" />
             تعيين الكل كمقروء
@@ -85,19 +85,19 @@ export function NotificationList({ items, unreadCount, loading, onMarkRead, onMa
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
-                    <div className={`font-semibold text-[13px] leading-tight ${!item.is_read ? "text-foreground" : "text-foreground/80"}`}>
+                    <div className={`font-semibold text-sm leading-tight ${!item.is_read ? "text-foreground" : "text-foreground/80"}`}>
                       {item.title}
                     </div>
                     {item.body && (
-                      <div className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">
+                      <div className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
                         {item.body}
                       </div>
                     )}
                     <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${meta.color}`}>
+                      <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${meta.color}`}>
                         {meta.label}
                       </span>
-                      <span className="text-[10px] text-muted-foreground">
+                      <span className="text-xs text-muted-foreground">
                         {formatDistanceToNow(item.created_at)}
                       </span>
                     </div>

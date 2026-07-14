@@ -68,19 +68,10 @@ export const PersonRowV2 = React.memo(function PersonRowV2({
 }: Props) {
     const [showActions, setShowActions] = useState(false);
 
-    // العملة الأساسية
-    const baseCurr = currencies.find((c) => c.is_base);
-    const baseBalance = baseCurr
-        ? currencyBalances.find((b) => b.currency_id === baseCurr.id)
-        : currencyBalances[0];
+    const settled = currencyBalances.every((b) => Math.abs(b.net) < 0.001) || currencyBalances.length === 0;
+    const hasOwe = currencyBalances.some((b) => b.net < -0.001);
+    const hasOwed = currencyBalances.some((b) => b.net > 0.001);
 
-    const displayNet = baseBalance?.net ?? balance.net;
-    const isCredit = displayNet >= 0;
-    const settled =
-        currencyBalances.every((b) => Math.abs(b.net) < 0.001) ||
-        (currencyBalances.length === 0 && Math.abs(balance.net) < 0.001);
-
-    const hasMultiCurrency = currencyBalances.length > 1;
     const hasActions = !!(onEdit || onArchive || onDelete);
     const lastDate = balance.lastDate;
 
@@ -108,34 +99,34 @@ export const PersonRowV2 = React.memo(function PersonRowV2({
         return "نشط";
     };
 
+    const borderColor = settled
+        ? "border-border/50"
+        : hasOwe
+            ? "border-danger/20"
+            : "border-success/20";
+
+    const gradientColor = settled
+        ? "bg-gradient-to-r from-muted-foreground/30 to-muted-foreground/10"
+        : hasOwe
+            ? "bg-gradient-to-r from-danger to-danger/40"
+            : "bg-gradient-to-r from-success to-success/40";
+
     return (
         <Link
             to="/app/person/$id"
             params={{ id: person.id }}
-            className={`block relative overflow-hidden rounded-xl md:rounded-2xl border shadow-sm hover:shadow-elevated transition-all duration-300 p-0 group animate-slide-up-fade ${settled
-                    ? "border-border/50"
-                    : isCredit
-                        ? "border-success/20"
-                        : "border-danger/20"
-                }`}
+            className={`block relative overflow-hidden rounded-xl md:rounded-2xl border shadow-sm hover:shadow-elevated transition-all duration-300 p-0 group animate-slide-up-fade ${borderColor}`}
             style={{ animationDelay: `${index * 60}ms` }}
         >
             {/* Gradient status bar */}
-            <div
-                className={`h-1 w-full ${settled
-                        ? "bg-gradient-to-r from-muted-foreground/30 to-muted-foreground/10"
-                        : isCredit
-                            ? "bg-gradient-to-r from-success to-success/40"
-                            : "bg-gradient-to-r from-danger to-danger/40"
-                    }`}
-            />
+            <div className={`h-1 w-full ${gradientColor}`} />
 
-            <div className="p-3 md:p-4">
+            <div className="p-4 md:p-4">
                 {/* Main Row */}
-                <div className="flex items-start gap-3 md:gap-4">
+                <div className="flex items-start gap-4 md:gap-4">
                     {/* Avatar */}
                     <div
-                        className={`relative size-11 md:size-13 rounded-xl md:rounded-2xl bg-gradient-to-br ${avatarGradient} flex items-center justify-center font-black text-white text-[15px] md:text-[19px] shadow-sm shrink-0 transition-transform group-hover:scale-105 duration-300`}
+                        className={`relative size-12 md:size-12 rounded-xl md:rounded-2xl bg-gradient-to-br ${avatarGradient} flex items-center justify-center font-black text-white text-base md:text-lg shadow-sm shrink-0 transition-transform group-hover:scale-105 duration-300`}
                     >
                         {person.name.trim().charAt(0)}
                         {/* Active indicator dot */}
@@ -147,38 +138,38 @@ export const PersonRowV2 = React.memo(function PersonRowV2({
                     {/* Info */}
                     <div className="flex-1 min-w-0 pt-1">
                         <div className="flex items-center gap-2">
-                            <h3 className="font-bold text-[14px] md:text-[16px] text-foreground truncate group-hover:text-primary transition-colors">
+                            <h3 className="font-bold text-sm md:text-base text-foreground truncate group-hover:text-primary transition-colors">
                                 {person.name}
                             </h3>
                             {person.notes && (
-                                <span className="text-[9px] text-muted-foreground hidden md:inline">
+                                <span className="text-xs text-muted-foreground hidden md:inline">
                                     • {person.notes}
                                 </span>
                             )}
                         </div>
 
-                        <div className="flex items-center flex-wrap gap-1.5 mt-1.5 text-[10px] md:text-[11px] text-muted-foreground">
+                        <div className="flex items-center flex-wrap gap-2 mt-2 text-xs md:text-sm text-muted-foreground">
                             {person.phone ? (
                                 <span
-                                    className="inline-flex items-center gap-1 bg-secondary/60 px-1.5 py-0.5 rounded-md font-medium"
+                                    className="inline-flex items-center gap-1.5 bg-secondary/60 px-2 py-1 rounded-md font-medium"
                                     dir="ltr"
                                 >
-                                    <Phone className="size-3 opacity-70" />
+                                    <Phone className="size-3.5 opacity-70" />
                                     {person.phone}
                                 </span>
                             ) : null}
 
-                            <span className="inline-flex items-center gap-1 bg-secondary/60 px-1.5 py-0.5 rounded-md font-medium">
+                            <span className="inline-flex items-center gap-1.5 bg-secondary/60 px-2 py-1 rounded-md font-medium">
                                 {getStatusIcon()}
                                 {balance.count} معاملة
                             </span>
 
                             <span
-                                className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md font-bold ${settled
-                                        ? "bg-success/10 text-success"
-                                        : isCredit
-                                            ? "bg-success/10 text-success"
-                                            : "bg-danger/10 text-danger"
+                                className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md font-bold ${settled
+                                    ? "bg-success/10 text-success"
+                                    : hasOwe
+                                        ? "bg-danger/10 text-danger"
+                                        : "bg-success/10 text-success"
                                     }`}
                             >
                                 {getStatusLabel()}
@@ -188,14 +179,14 @@ export const PersonRowV2 = React.memo(function PersonRowV2({
 
                     {/* Balance + Actions */}
                     <div className="shrink-0 flex flex-col items-end gap-1.5">
-                        {settled ? (
+                        {settled && currencyBalances.length > 0 ? (
                             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-success/10 border border-success/15">
                                 <CheckCircle2 className="size-3.5 text-success" />
                                 <span className="text-[10px] md:text-[11px] font-black text-success">
                                     مسوّى
                                 </span>
                             </div>
-                        ) : hasMultiCurrency ? (
+                        ) : currencyBalances.length > 0 ? (
                             <div className="flex flex-col gap-1 items-end">
                                 {currencyBalances
                                     .filter((b) => Math.abs(b.net) >= 0.001)
@@ -206,8 +197,8 @@ export const PersonRowV2 = React.memo(function PersonRowV2({
                                             <div
                                                 key={b.currency_id}
                                                 className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] md:text-[11px] font-black tabular-nums shadow-sm border transition-all hover:scale-105 ${isPos
-                                                        ? "bg-success-soft text-success border-success/30"
-                                                        : "bg-danger-soft text-danger border-danger/30"
+                                                    ? "bg-success-soft text-success border-success/30"
+                                                    : "bg-danger-soft text-danger border-danger/30"
                                                     }`}
                                             >
                                                 {isPos ? (
@@ -225,31 +216,7 @@ export const PersonRowV2 = React.memo(function PersonRowV2({
                                     })}
                             </div>
                         ) : (
-                            <div className="flex flex-col items-end">
-                                <div
-                                    className={`font-black text-[16px] md:text-[19px] tabular-nums leading-none tracking-tight transition-all ${isCredit ? "text-success" : "text-danger"
-                                        }`}
-                                >
-                                    {isCredit ? "" : "-"}
-                                    {fmtMoney(Math.abs(displayNet))}
-                                </div>
-                                <div className="flex items-center gap-1 mt-1">
-                                    <span
-                                        className={`text-[9px] md:text-[10px] font-bold px-1.5 py-0.5 rounded ${isCredit
-                                                ? "bg-success/10 text-success"
-                                                : "bg-danger/10 text-danger"
-                                            }`}
-                                    >
-                                        {isCredit ? "له" : "عليه"}
-                                    </span>
-                                    {lastDate > 0 && (
-                                        <span className="text-[9px] text-muted-foreground bg-secondary/50 px-1.5 py-0.5 rounded">
-                                            <Calendar className="size-2.5 inline me-0.5" />
-                                            {fmtDate(new Date(lastDate).toISOString())}
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
+                            <span className="text-[10px] text-muted-foreground bg-secondary/50 px-2 py-1 rounded-lg">جديد</span>
                         )}
 
                         {hasActions && (
@@ -320,7 +287,7 @@ export const PersonRowV2 = React.memo(function PersonRowV2({
                 </div>
 
                 {/* Currency Breakdown */}
-                {currencyBalances.length > 0 ? (
+                {currencyBalances.length > 0 && (
                     <div className="mt-3 md:mt-4 pt-3 md:pt-4 border-t border-border/40 space-y-2">
                         {currencyBalances.map((b) => {
                             const curr = currencies.find((c) => c.id === b.currency_id);
@@ -331,15 +298,12 @@ export const PersonRowV2 = React.memo(function PersonRowV2({
                                     key={b.currency_id}
                                     className="grid grid-cols-3 gap-2 bg-gradient-to-br from-background/80 to-background/40 rounded-lg p-2 md:p-2.5 border border-border/30 transition-all hover:border-border/60"
                                 >
-                                    {hasMultiCurrency && (
-                                        <div className="col-span-3 text-[10px] md:text-[11px] font-black text-foreground/70 mb-0.5 flex items-center gap-1.5">
-                                            <span
-                                                className={`w-1.5 h-1.5 rounded-full ${isPos ? "bg-success" : "bg-danger"
-                                                    }`}
-                                            />
-                                            {curr?.name ?? sym}
-                                        </div>
-                                    )}
+                                    <div className="col-span-3 text-[10px] md:text-[11px] font-black text-foreground/70 mb-0.5 flex items-center gap-1.5">
+                                        <span
+                                            className={`w-1.5 h-1.5 rounded-full ${isPos ? "bg-success" : "bg-danger"}`}
+                                        />
+                                        {curr?.name ?? sym}
+                                    </div>
 
                                     <div className="flex flex-col bg-success/5 p-1.5 md:p-2 rounded-lg border border-success/10">
                                         <span className="text-muted-foreground flex items-center gap-1 text-[9px] md:text-[10px] font-bold mb-1">
@@ -378,43 +342,7 @@ export const PersonRowV2 = React.memo(function PersonRowV2({
                             );
                         })}
                     </div>
-                ) : (balance.totalCredit ?? 0) > 0 || (balance.totalDebit ?? 0) > 0 ? (
-                    <div className="mt-3 md:mt-4 pt-3 md:pt-4 border-t border-border/40">
-                        <div className="grid grid-cols-3 gap-2 bg-gradient-to-br from-background/80 to-background/40 rounded-lg p-2 md:p-2.5 border border-border/30">
-                            <div className="flex flex-col bg-success/5 p-1.5 md:p-2 rounded-lg border border-success/10">
-                                <span className="text-muted-foreground flex items-center gap-1 text-[9px] md:text-[10px] font-bold mb-1">
-                                    <TrendingUp className="size-3 text-success" />
-                                    له
-                                </span>
-                                <span className="tabular-nums font-black text-[11px] md:text-[13px] text-success">
-                                    {fmtMoney(balance.totalCredit ?? 0)}
-                                </span>
-                            </div>
-
-                            <div className="flex flex-col bg-danger/5 p-1.5 md:p-2 rounded-lg border border-danger/10">
-                                <span className="text-muted-foreground flex items-center gap-1 text-[9px] md:text-[10px] font-bold mb-1">
-                                    <TrendingDown className="size-3 text-danger" />
-                                    عليه
-                                </span>
-                                <span className="tabular-nums font-black text-[11px] md:text-[13px] text-danger">
-                                    {fmtMoney(balance.totalDebit ?? 0)}
-                                </span>
-                            </div>
-
-                            <div className="flex flex-col items-end bg-secondary/30 p-1.5 md:p-2 rounded-lg border border-border/30">
-                                <span className="text-muted-foreground flex items-center gap-1 text-[9px] md:text-[10px] font-bold mb-1">
-                                    <Clock className="size-3" />
-                                    آخر دفعة
-                                </span>
-                                <span className="tabular-nums font-bold text-[11px] md:text-[13px] text-foreground/80 truncate">
-                                    {lastDate
-                                        ? fmtDate(new Date(lastDate).toISOString())
-                                        : "—"}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                ) : null}
+                )}
             </div>
         </Link>
     );

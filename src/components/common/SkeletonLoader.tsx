@@ -90,8 +90,8 @@ export function PersonRowSkeleton({ count = 3 }: { count?: number }) {
                     className="block rounded-xl md:rounded-2xl border border-border/50 bg-card p-3 md:p-4 animate-pulse"
                     style={{ animationDelay: `${i * 100}ms` }}
                 >
-                    <div className="flex items-start gap-3 md:gap-4">
-                        <div className="size-11 md:size-13 rounded-xl md:rounded-2xl skeleton shrink-0" />
+                    <div className="flex items-start gap-4 md:gap-4">
+                        <div className="size-12 md:size-12 rounded-xl md:rounded-2xl skeleton shrink-0" />
                         <div className="flex-1 space-y-2 pt-1">
                             <div className="skeleton h-4 w-32 md:w-40 rounded-md" />
                             <div className="skeleton h-3 w-24 md:w-28 rounded-md" />

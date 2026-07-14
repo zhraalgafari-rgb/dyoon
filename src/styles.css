@@ -147,20 +147,21 @@
 
   html {
     direction: rtl;
-    /* Micro-scale v2: tighter base so rem-based spacing/sizing compresses
-       proportionally for a denser, smartphone-grade accounting UI. */
-    font-size: 12.5px;
+    /* Standard 8px Grid System
+       Base font size 16px ensures WCAG AA compliance (minimum 16px for body text)
+       All rem-based spacing/sizing now aligns to 8px grid */
+    font-size: 16px;
   }
 
   @media (min-width: 768px) {
     html {
-      font-size: 15px;
+      font-size: 16px;
     }
   }
 
   @media (min-width: 1280px) {
     html {
-      font-size: 15.5px;
+      font-size: 16px;
     }
   }
 

@@ -39,7 +39,7 @@ export function BalanceCardV2({ data, defaultOpen = false, index = 0 }: Props) {
                 className={`h-1 w-full ${isPositive ? 'bg-gradient-to-r from-success to-success/60' : 'bg-gradient-to-r from-danger to-danger/60'}`}
             />
 
-            <div className="p-3 md:p-4 space-y-3">
+            <div className="p-4 md:p-4 space-y-3">
                 {/* Header */}
                 <button
                     onClick={() => setOpen(!open)}
@@ -49,16 +49,16 @@ export function BalanceCardV2({ data, defaultOpen = false, index = 0 }: Props) {
                 >
                     <div className="flex items-center gap-2">
                         <div className={`size-8 rounded-xl flex items-center justify-center font-black text-sm shadow-sm transition-transform group-hover:scale-110 ${isPositive
-                                ? 'bg-success text-success-foreground'
-                                : 'bg-danger text-danger-foreground'
+                            ? 'bg-success text-success-foreground'
+                            : 'bg-danger text-danger-foreground'
                             }`}>
                             {currency.symbol}
                         </div>
                         <div className="text-right">
-                            <div className="font-bold text-[13px] md:text-[14px] text-foreground leading-tight">
+                            <div className="font-bold text-sm md:text-base text-foreground leading-tight">
                                 {currency.name}
                             </div>
-                            <div className="text-[10px] text-muted-foreground font-medium">
+                            <div className="text-xs text-muted-foreground font-medium">
                                 {isPositive ? 'صافي له' : 'صافي عليه'}
                             </div>
                         </div>
@@ -93,27 +93,27 @@ export function BalanceCardV2({ data, defaultOpen = false, index = 0 }: Props) {
                 {/* Quick Stats */}
                 <div className="grid grid-cols-2 gap-2">
                     <div className="flex flex-col p-2 md:p-2.5 rounded-xl bg-success/5 border border-success/10">
-                        <div className="flex items-center gap-1 text-[10px] md:text-[11px] font-bold text-muted-foreground mb-1">
-                            <TrendingUp className="size-3 text-success/70" />
+                        <div className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground mb-1">
+                            <TrendingUp className="size-3.5 text-success/70" />
                             له
                         </div>
-                        <div className="tabular-nums font-black text-[13px] md:text-[15px] text-success">
+                        <div className="tabular-nums font-black text-sm md:text-base text-success">
                             {fmtMoney(owed)}
                         </div>
-                        <div className="text-[9px] text-muted-foreground mt-0.5">
+                        <div className="text-xs text-muted-foreground mt-0.5">
                             {owedPct.toFixed(0)}% من الإجمالي
                         </div>
                     </div>
 
                     <div className="flex flex-col p-2 md:p-2.5 rounded-xl bg-danger/5 border border-danger/10">
-                        <div className="flex items-center gap-1 text-[10px] md:text-[11px] font-bold text-muted-foreground mb-1">
-                            <TrendingDown className="size-3 text-danger/70" />
+                        <div className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground mb-1">
+                            <TrendingDown className="size-3.5 text-danger/70" />
                             عليه
                         </div>
-                        <div className="tabular-nums font-black text-[13px] md:text-[15px] text-danger">
+                        <div className="tabular-nums font-black text-sm md:text-base text-danger">
                             {fmtMoney(owe)}
                         </div>
-                        <div className="text-[9px] text-muted-foreground mt-0.5">
+                        <div className="text-xs text-muted-foreground mt-0.5">
                             {owePct.toFixed(0)}% من الإجمالي
                         </div>
                     </div>
@@ -125,17 +125,17 @@ export function BalanceCardV2({ data, defaultOpen = false, index = 0 }: Props) {
                         }`}
                 >
                     <div className="pt-3 border-t border-border/50 space-y-2">
-                        <div className="flex items-center justify-between text-[11px] md:text-[12px]">
+                        <div className="flex items-center justify-between text-xs md:text-sm">
                             <span className="text-muted-foreground font-medium">الإجمالي</span>
                             <span className="font-bold tabular-nums">{fmtMoney(total)}</span>
                         </div>
-                        <div className="flex items-center justify-between text-[11px] md:text-[12px]">
+                        <div className="flex items-center justify-between text-xs md:text-sm">
                             <span className="text-muted-foreground font-medium">صافي الرصيد</span>
                             <span className={`font-black tabular-nums ${isPositive ? 'text-success' : 'text-danger'}`}>
                                 {isPositive ? '' : '-'}{fmtMoney(Math.abs(net))}
                             </span>
                         </div>
-                        <div className="flex items-center justify-between text-[11px] md:text-[12px]">
+                        <div className="flex items-center justify-between text-xs md:text-sm">
                             <span className="text-muted-foreground font-medium">نسبة الربح/الخسارة</span>
                             <span className="font-bold tabular-nums">
                                 {total > 0 ? ((net / total) * 100).toFixed(1) : '0.0'}%
@@ -144,8 +144,8 @@ export function BalanceCardV2({ data, defaultOpen = false, index = 0 }: Props) {
 
                         {/* Active indicator */}
                         {currency.is_base && (
-                            <div className="flex items-center gap-1.5 mt-2 px-2 py-1.5 rounded-lg bg-primary/5 border border-primary/15 text-[10px] font-bold text-primary">
-                                <Info className="size-3" />
+                            <div className="flex items-center gap-1.5 mt-2 px-2 py-1.5 rounded-lg bg-primary/5 border border-primary/15 text-xs font-bold text-primary">
+                                <Info className="size-3.5" />
                                 العملة الأساسية
                             </div>
                         )}
