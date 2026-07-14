@@ -1,14 +1,13 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/common/PageHeader";
 import { ListSkeleton } from "@/components/Skeleton";
 import { EmptyState } from "@/components/EmptyState";
 import { fmtMoney } from "@/lib/format";
-import { AlertTriangle, CheckCircle2, BellRing } from "lucide-react";
+import { AlertTriangle, CheckCircle2, BellRing, RefreshCw } from "lucide-react";
 import { generateReminderMessage } from "@/lib/ai.functions";
 import { ensureNotificationPermission, notify } from "@/lib/push";
 import { toast } from "sonner";
@@ -23,10 +22,11 @@ export const Route = createFileRoute("/app/followup")({ component: FollowupPage 
 function FollowupPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const [tab, setTab] = useState<"all" | "critical" | "late" | "soon">("all");
+  const [tab, setTab] = useState<"all" | "critical" | "late" | "soon" | "ok">("all");
   const [draftFor, setDraftFor] = useState<Bucket | null>(null);
   const [draftText, setDraftText] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
+  const [syncing, setSyncing] = useState(false);
 
   const { data: dashboard, isLoading: dashLoading } = useDashboardData(user?.id);
   const people = dashboard?.people ?? [];
@@ -36,22 +36,39 @@ function FollowupPage() {
     queryKey: ["followupBuckets", user?.id],
     queryFn: async () => {
       if (!user || !dashboard) return [];
-      const [{ data: tx }] = await Promise.all([
-        supabase.from("transactions")
-          .select("id,person_id,currency_id,due_date")
-          .not("due_date", "is", null)
-          .eq("is_paid", false),
-      ]);
+      const { data: tx } = await supabase
+        .from("transactions")
+        .select("id,person_id,currency_id,due_date")
+        .not("due_date", "is", null)
+        .eq("is_paid", false);
+
       const currencyMap = new Map<string, any>(currencies.map((c: any) => [c.id, c]));
       const peopleMap = new Map<string, any>();
       people.forEach((p) => peopleMap.set(p.id, p));
-      
+
       return buildBuckets(dashboard.personCurrencyBalances, tx ?? [], peopleMap, currencyMap);
     },
-    enabled: !!user && !!dashboard && currencies.length > 0 && people.length > 0,
+    // Fix: only require dashboard to be loaded (not currencies/people length)
+    enabled: !!user && !!dashboard,
   });
 
   const isLoading = dashLoading || bucketsLoading;
+
+  // Run sync_overdue_alerts to populate smart_alerts from overdue transactions
+  const syncOverdue = async () => {
+    setSyncing(true);
+    try {
+      const { error } = await (supabase.rpc as any)("sync_overdue_alerts");
+      if (error) throw new Error(error.message);
+      toast.success("تم تحديث التنبيهات المتأخرة");
+      queryClient.invalidateQueries({ queryKey: ["followupBuckets"] });
+      queryClient.invalidateQueries({ queryKey: ["alerts"] });
+    } catch (e: any) {
+      toast.error(e?.message ?? "تعذر المزامنة");
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   // Local notification for critical/late buckets once per session
   useMemo(() => {
@@ -71,6 +88,7 @@ function FollowupPage() {
     critical: buckets.filter((b) => b.severity === "critical").length,
     late: buckets.filter((b) => b.severity === "late").length,
     soon: buckets.filter((b) => b.severity === "soon").length,
+    ok: buckets.filter((b) => b.severity === "ok").length,
   }), [buckets]);
 
   const filtered = tab === "all" ? buckets : buckets.filter((b) => b.severity === tab);
@@ -108,23 +126,34 @@ function FollowupPage() {
 
   return (
     <div className="space-y-3">
-      <PageHeader icon={BellRing} title="المتابعة الذكية" subtitle="تذكير وإدارة الديون المتأخرة بمساعدة الذكاء الاصطناعي" />
+      <div className="flex items-start justify-between gap-2">
+        <PageHeader icon={BellRing} title="المتابعة الذكية" subtitle="تذكير وإدارة الديون المتأخرة بمساعدة الذكاء الاصطناعي" />
+        <button
+          onClick={syncOverdue}
+          disabled={syncing}
+          className="shrink-0 mt-1 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold bg-secondary hover:bg-secondary/70 text-muted-foreground transition-colors disabled:opacity-50"
+        >
+          <RefreshCw className={`size-3.5 ${syncing ? "animate-spin" : ""}`} />
+          مزامنة
+        </button>
+      </div>
 
       {/* Summary chips */}
-      <div className="grid grid-cols-4 gap-1.5">
-        {(["all", "critical", "late", "soon"] as const).map((t) => {
+      <div className="grid grid-cols-5 gap-1.5">
+        {(["all", "critical", "late", "soon", "ok"] as const).map((t) => {
           const active = tab === t;
           const meta: Record<string, { label: string; cls: string }> = {
-            all: { label: "الكل", cls: "bg-primary text-primary-foreground" },
-            critical: { label: "حرج", cls: "bg-danger text-danger-foreground" },
-            late: { label: "متأخر", cls: "bg-danger-soft text-danger" },
-            soon: { label: "قريب", cls: "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300" },
+            all:      { label: "الكل",    cls: "bg-primary text-primary-foreground" },
+            critical: { label: "حرج",     cls: "bg-danger text-danger-foreground" },
+            late:     { label: "متأخر",   cls: "bg-danger-soft text-danger" },
+            soon:     { label: "قريب",    cls: "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300" },
+            ok:       { label: "آمن",     cls: "bg-success-soft text-success" },
           };
           return (
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`rounded-lg p-1.5 border text-[11px] font-bold flex flex-col items-center gap-0.5 transition ${active ? meta[t].cls + " border-transparent shadow-card" : "bg-card border-border text-foreground hover:bg-secondary"}`}
+              className={`rounded-lg p-1.5 border text-[10px] font-bold flex flex-col items-center gap-0.5 transition ${active ? meta[t].cls + " border-transparent shadow-card" : "bg-card border-border text-foreground hover:bg-secondary"}`}
             >
               <span>{meta[t].label}</span>
               <span className="text-[10px] opacity-80 tabular-nums">{counts[t]}</span>
@@ -150,11 +179,19 @@ function FollowupPage() {
       {isLoading ? (
         <ListSkeleton rows={4} />
       ) : filtered.length === 0 ? (
-        <EmptyState icon={CheckCircle2} title="لا يوجد ما يستوجب المتابعة" description="جميع العملاء ضمن الحدود الآمنة. أحسنت!" />
+        <div className="space-y-3">
+          <EmptyState
+            icon={CheckCircle2}
+            title={tab === "all" ? "لا يوجد ما يستوجب المتابعة" : `لا يوجد عملاء في حالة "${tab === "critical" ? "حرج" : tab === "late" ? "متأخر" : tab === "soon" ? "قريب" : "آمن"}"`}
+            description={tab === "all"
+              ? "جميع العملاء ضمن الحدود الآمنة، أو لا توجد ديون مسجلة. اضغط 'مزامنة' لتحديث التنبيهات."
+              : "جرّب تبويباً آخر لعرض حالات مختلفة."}
+          />
+        </div>
       ) : (
         <div className="space-y-2">
           {filtered.map((b) => (
-            <FollowupBucketCard 
+            <FollowupBucketCard
               key={`${b.person.id}-${b.currency}`}
               bucket={b}
               onGenerateMessage={genMessage}

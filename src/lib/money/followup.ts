@@ -7,6 +7,7 @@ interface Person {
 
 export interface Bucket {
   person: Person;
+  /** الرصيد بالقيمة الموجبة دائماً (المبلغ المديون) */
   net: number;
   currency: string;
   daysOverdue: number;
@@ -23,10 +24,10 @@ export function severityFor(days: number, amount: number, limit: number | null):
 }
 
 export const severityMeta: Record<Bucket["severity"], { label: string; cls: string; ring: string }> = {
-  ok: { label: "ضمن المهلة", cls: "bg-success-soft text-success", ring: "ring-success/30" },
-  soon: { label: "قريباً", cls: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300", ring: "ring-amber-400/40" },
-  late: { label: "متأخر", cls: "bg-danger-soft text-danger", ring: "ring-danger/30" },
-  critical: { label: "حرج", cls: "bg-danger text-danger-foreground", ring: "ring-danger/50" },
+  ok:       { label: "ضمن المهلة", cls: "bg-success-soft text-success",    ring: "ring-success/30" },
+  soon:     { label: "قريباً",     cls: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300", ring: "ring-amber-400/40" },
+  late:     { label: "متأخر",      cls: "bg-danger-soft text-danger",       ring: "ring-danger/30" },
+  critical: { label: "حرج",        cls: "bg-danger text-danger-foreground", ring: "ring-danger/50" },
 };
 
 import { PersonCurrencyBalance } from "@/hooks/useDashboardData";
@@ -48,7 +49,6 @@ export function buildBuckets(
     const days = Math.floor((today - d) / 86400000);
     const existing = overdueMap.get(key) ?? { daysOverdue: -9999, oldestDue: null };
     
-    // We want the OLDEST due date (the one furthest in the past), which means highest daysOverdue
     if (days > existing.daysOverdue) {
       existing.daysOverdue = days;
       existing.oldestDue = t.due_date;
@@ -63,24 +63,35 @@ export function buildBuckets(
     if (!person) return;
     
     balances.forEach((b) => {
-      // Only include people who actually owe us money
-      if (b.net <= 0) return;
+      // المنطق: net < 0 يعني العميل مدين للمستخدم ("عليه" دين)
+      // net > 0 يعني المستخدم مدين للعميل ("له" رصيد)
+      // نريد فقط من عليهم ديون للمستخدم (net < 0)
+      // نتجاهل الأرصدة الصفرية أو القريبة من الصفر
+      if (b.net >= 0) return; // b.net >= 0 → إما مسوّى أو المستخدم هو المدين
+      if (Math.abs(b.net) < 0.001) return; // مسوّى فعلياً
       
+      const absNet = Math.abs(b.net); // نستخدم القيمة الموجبة في العرض
       const currencyName = currencyMap.get(b.currency_id)?.name ?? b.currency_id;
       const key = `${personId}|${b.currency_id}`;
       const overdueInfo = overdueMap.get(key) ?? { daysOverdue: -9999, oldestDue: null };
       
       list.push({
         person,
-        net: b.net,
+        net: absNet,
         currency: currencyName,
         daysOverdue: overdueInfo.daysOverdue,
         oldestDue: overdueInfo.oldestDue,
         txCount: b.txCount,
-        severity: severityFor(overdueInfo.daysOverdue, b.net, person.credit_limit),
+        severity: severityFor(overdueInfo.daysOverdue, absNet, person.credit_limit),
       });
     });
   });
 
-  return list.sort((a, b) => b.net - a.net).sort((a, b) => b.daysOverdue - a.daysOverdue);
+  // Sort: first by severity (critical first), then by amount (largest first)
+  const severityOrder = { critical: 0, late: 1, soon: 2, ok: 3 };
+  return list.sort((a, b) => {
+    const sOrder = severityOrder[a.severity] - severityOrder[b.severity];
+    if (sOrder !== 0) return sOrder;
+    return b.net - a.net;
+  });
 }
