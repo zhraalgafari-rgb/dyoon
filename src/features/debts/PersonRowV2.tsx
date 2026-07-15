@@ -5,6 +5,8 @@ import { fmtMoney } from "@/lib/format";
 import { PersonRowProps } from "./types";
 import { PersonRowActionsMenu } from "./person/PersonRowActionsMenu";
 import { PersonCurrencyBreakdown } from "./person/PersonCurrencyBreakdown";
+import { RiskScoreBadge } from "@/components/RiskScoreBadge";
+import { useRiskScore } from "@/hooks/useRiskScore";
 
 type Props = PersonRowProps;
 
@@ -28,6 +30,7 @@ export const PersonRowV2 = React.memo(function PersonRowV2({
   onArchive,
   onDelete,
 }: Props) {
+  const { riskScore } = useRiskScore(person.id);
   const settled =
     currencyBalances.every((b) => Math.abs(b.net) < 0.001) || currencyBalances.length === 0;
   const hasOwe = currencyBalances.some((b) => b.net < -0.001);
@@ -98,11 +101,16 @@ export const PersonRowV2 = React.memo(function PersonRowV2({
               <h3 className="font-bold text-sm md:text-base text-foreground truncate group-hover:text-primary transition-colors">
                 {person.name}
               </h3>
-              {person.notes && (
-                <span className="text-xs text-muted-foreground hidden md:inline">
-                  • {person.notes}
-                </span>
-              )}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {riskScore && (
+                  <RiskScoreBadge score={riskScore.score} classification={riskScore.classification} size="sm" showLabel={false} />
+                )}
+                {person.notes && (
+                  <span className="text-xs text-muted-foreground hidden md:inline">
+                    • {person.notes}
+                  </span>
+                )}
+              </div>
             </div>
 
             <div className="flex items-center flex-wrap gap-2 mt-2 text-xs md:text-sm text-muted-foreground">
@@ -122,13 +130,12 @@ export const PersonRowV2 = React.memo(function PersonRowV2({
               </span>
 
               <span
-                className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md font-bold ${
-                  settled
+                className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md font-bold ${settled
                     ? "bg-success/10 text-success"
                     : hasOwe
                       ? "bg-danger/10 text-danger"
                       : "bg-success/10 text-success"
-                }`}
+                  }`}
               >
                 {getStatusLabel()}
               </span>
@@ -152,11 +159,10 @@ export const PersonRowV2 = React.memo(function PersonRowV2({
                     return (
                       <div
                         key={b.currency_id}
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] md:text-[11px] font-black tabular-nums shadow-sm border transition-all hover:scale-105 ${
-                          isPos
+                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] md:text-[11px] font-black tabular-nums shadow-sm border transition-all hover:scale-105 ${isPos
                             ? "bg-success-soft text-success border-success/30"
                             : "bg-danger-soft text-danger border-danger/30"
-                        }`}
+                          }`}
                       >
                         {isPos ? (
                           <ArrowUpRight className="size-2.5" />

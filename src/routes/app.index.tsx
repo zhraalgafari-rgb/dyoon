@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Loader2, Plus, UserPlus, Users } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import {
   useDashboardData,
   type Person,
@@ -68,6 +70,35 @@ function DebtsHome() {
     data?.personCurrencyBalances ?? new Map();
   const rpcTotalsData: RpcTotalsRow[] = data?.rpcTotals ?? [];
   const currencies = data?.currencies ?? [];
+
+  // Fetch risk scores for all visible people
+  const { data: riskScoresData } = useQuery({
+    queryKey: ["riskScores", people.map(p => p.id)],
+    queryFn: async () => {
+      if (!user?.id || people.length === 0) return {};
+
+      const { data, error } = await (supabase as any)
+        .from("customer_risk_scores")
+        .select("person_id, score, classification")
+        .eq("user_id", user.id)
+        .in("person_id", people.map(p => p.id));
+
+      if (error) {
+        console.error("Error fetching risk scores:", error);
+        return {};
+      }
+
+      const scores: Record<string, { score: number; classification: string }> = {};
+      (data ?? []).forEach((rs: any) => {
+        scores[rs.person_id] = {
+          score: rs.score,
+          classification: rs.classification,
+        };
+      });
+      return scores;
+    },
+    enabled: !!user?.id && people.length > 0,
+  });
 
   const { q, setQ, deferredQ, filter, setFilter, sort, setSort, filtered } = useDashboardFilter(
     people,
@@ -188,6 +219,7 @@ function DebtsHome() {
             },
             currencyBalances: personCurrencyBalances.get(p.id) ?? [],
             currencies,
+            riskScore: riskScoresData?.[p.id] ?? null,
           }))}
           onEdit={actions.onEdit}
           onArchive={actions.onArchive}

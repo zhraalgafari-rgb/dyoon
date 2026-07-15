@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -16,6 +16,7 @@ import { FollowupBucketCard } from "@/features/reminders/FollowupBucketCard";
 import { FollowupDraftDialog } from "@/features/reminders/FollowupDraftDialog";
 import { FollowupManager } from "@/features/reminders/FollowupManager";
 import { useDashboardData } from "@/hooks/useDashboardData";
+import { useBrokenPromises } from "@/features/promises/usePromises";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -24,6 +25,7 @@ export const Route = createFileRoute("/app/followup")({ component: FollowupPage 
 function FollowupPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const nav = useNavigate();
   const [tab, setTab] = useState<"all" | "critical" | "late" | "soon" | "ok">("all");
   const [draftFor, setDraftFor] = useState<Bucket | null>(null);
   const [draftText, setDraftText] = useState("");
@@ -55,7 +57,9 @@ function FollowupPage() {
     enabled: !!user && !!dashboard,
   });
 
-  const isLoading = dashLoading || bucketsLoading;
+  const { brokenPromises = [], isLoading: brokenPromisesLoading } = useBrokenPromises();
+
+  const isLoading = dashLoading || bucketsLoading || brokenPromisesLoading;
 
   // Run sync_overdue_alerts to populate smart_alerts from overdue transactions
   const syncOverdue = async () => {
@@ -186,7 +190,7 @@ function FollowupPage() {
       </div>
 
       {/* Statistics Cards */}
-      {!isLoading && buckets.length > 0 && (
+      {!isLoading && (buckets.length > 0 || brokenPromises.length > 0) && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
           <div className="rounded-xl border bg-card shadow-card p-3 space-y-1">
             <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
@@ -215,12 +219,10 @@ function FollowupPage() {
           <div className="rounded-xl border bg-card shadow-card p-3 space-y-1">
             <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
               <BarChart3 className="size-3" />
-              نسبة الحرج
+              وعود مكسورة
             </div>
-            <div className="font-black text-lg tabular-nums text-danger">{stats.criticalPercentage}%</div>
-            <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden mt-1">
-              <div className="h-full bg-danger rounded-full" style={{ width: `${stats.criticalPercentage}%` }} />
-            </div>
+            <div className="font-black text-lg tabular-nums text-red-600">{brokenPromises.length}</div>
+            <div className="text-[9px] text-muted-foreground">تحتاج متابعة عاجلة</div>
           </div>
         </div>
       )}
@@ -312,7 +314,7 @@ function FollowupPage() {
       {/* Content */}
       {isLoading ? (
         <ListSkeleton rows={4} />
-      ) : filtered.length === 0 ? (
+      ) : filtered.length === 0 && brokenPromises.length === 0 ? (
         <div className="space-y-3">
           <EmptyState
             icon={searchQuery ? Search : CheckCircle2}
@@ -328,16 +330,52 @@ function FollowupPage() {
           />
         </div>
       ) : (
-        <div className="space-y-2">
-          {filtered.map((b, index) => (
-            <div key={`${b.person.id}-${b.currency}`} className="animate-slide-up-fade" style={{ animationDelay: `${index * 50}ms` }}>
-              <FollowupBucketCard
-                bucket={b}
-                onGenerateMessage={genMessage}
-                onSendWhatsApp={openWhatsApp}
-              />
+        <div className="space-y-4">
+          {/* Broken Promises Section */}
+          {brokenPromises.length > 0 && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm font-bold text-red-600 dark:text-red-400">
+                <AlertTriangle className="size-4" />
+                وعود سداد مكسورة
+              </div>
+              {brokenPromises.slice(0, 5).map((bp: any) => (
+                <div
+                  key={bp.id}
+                  className="rounded-xl border border-red-200 dark:border-red-900 bg-red-50/50 dark:bg-red-950/20 p-3 flex items-center justify-between"
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-sm">{bp.person_name}</div>
+                    <div className="text-xs text-muted-foreground">
+                      وعد بمبلغ {fmtMoney(bp.amount)} بتاريخ {bp.promise_date}
+                    </div>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => nav({ to: `/app/person/${bp.person_id}` })}
+                    className="shrink-0"
+                  >
+                    عرض
+                  </Button>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
+
+          {/* Regular Followup Buckets */}
+          {filtered.length > 0 && (
+            <div className="space-y-2">
+              {filtered.map((b, index) => (
+                <div key={`${b.person.id}-${b.currency}`} className="animate-slide-up-fade" style={{ animationDelay: `${index * 50}ms` }}>
+                  <FollowupBucketCard
+                    bucket={b}
+                    onGenerateMessage={genMessage}
+                    onSendWhatsApp={openWhatsApp}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

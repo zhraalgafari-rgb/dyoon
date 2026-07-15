@@ -3,6 +3,7 @@ import { fmtMoney, fmtDate } from "@/lib/format";
 import type { PersonBalance } from "./types";
 import type { Person, PersonCurrencyBalance, Currency } from "@/hooks/useDashboardData";
 import { RowActions } from "@/components/common/RowActions";
+import { RiskScoreBadge } from "@/components/RiskScoreBadge";
 
 interface Props {
   rows: {
@@ -10,6 +11,7 @@ interface Props {
     balance: PersonBalance;
     currencyBalances?: PersonCurrencyBalance[];
     currencies?: Currency[];
+    riskScore?: { score: number; classification: string } | null;
   }[];
   onEdit?: (p: Person) => void;
   onArchive?: (p: Person) => void;
@@ -33,11 +35,13 @@ export function PersonTable({ rows, onEdit, onArchive, onDelete }: Props) {
               <th className="text-left">عليه</th>
               <th className="text-left">الصافي</th>
               <th className="text-center hidden xs:table-cell">آخر دفعة</th>
+              <th className="text-center hidden md:table-cell">التقييم</th>
               {hasActions && <th className="text-center w-10 md:w-12">إجراء</th>}
             </tr>
           </thead>
           <tbody>
-            {rows.map(({ person, balance, currencyBalances = [], currencies = [] }, i) => {
+            {rows.map((row, i) => {
+              const { person, balance, currencyBalances = [], currencies = [], riskScore } = row;
               const displayRows = currencyBalances.length > 0 ? currencyBalances : null;
 
               if (displayRows) {
@@ -127,6 +131,13 @@ export function PersonTable({ rows, onEdit, onArchive, onDelete }: Props) {
                       <td className="px-2 py-1.5 md:px-3 md:py-2 text-center hidden xs:table-cell text-muted-foreground tabular-nums">
                         {bi === 0 && b.lastDate ? fmtDate(new Date(b.lastDate).toISOString()) : "—"}
                       </td>
+                      <td className="px-2 py-1.5 md:px-3 md:py-2 text-center hidden md:table-cell">
+                        {bi === 0 && riskScore ? (
+                          <RiskScoreBadge score={riskScore.score} classification={riskScore.classification} size="sm" showLabel={false} />
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </td>
                       {hasActions && (
                         <td className="px-1 py-1 md:px-2 md:py-2 text-center border-r-0">
                           {bi === 0 ? (
@@ -185,6 +196,13 @@ export function PersonTable({ rows, onEdit, onArchive, onDelete }: Props) {
                   <td className="px-2 py-1.5 md:px-3 md:py-2 text-center hidden xs:table-cell text-muted-foreground tabular-nums">
                     —
                   </td>
+                  <td className="px-2 py-1.5 md:px-3 md:py-2 text-center hidden md:table-cell">
+                    {riskScore ? (
+                      <RiskScoreBadge score={riskScore.score} classification={riskScore.classification} size="sm" showLabel={false} />
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
+                  </td>
                   {hasActions && (
                     <td className="px-1 py-1 md:px-2 md:py-2 text-center border-r-0">
                       <RowActions
@@ -200,7 +218,7 @@ export function PersonTable({ rows, onEdit, onArchive, onDelete }: Props) {
             {rows.length === 0 && (
               <tr>
                 <td
-                  colSpan={hasActions ? 9 : 8}
+                  colSpan={hasActions ? 10 : 9}
                   className="text-center py-8 text-muted-foreground text-xs md:text-sm bg-secondary/20"
                 >
                   لا توجد بيانات

@@ -30,6 +30,11 @@ import { computeRunningByCurrency, computeBalancesByCurrency } from "@/lib/money
 import { useCurrencies } from "@/hooks/useCurrencies";
 import { useAllPeople } from "@/hooks/usePeople";
 import { usePersonData } from "@/hooks/usePersonData";
+import { PromiseList } from "@/features/promises/PromiseList";
+import { PromiseDialog } from "@/features/promises/PromiseDialog";
+import { usePromises } from "@/features/promises/usePromises";
+import { useRiskScore } from "@/hooks/useRiskScore";
+import { RiskScoreCard } from "@/components/RiskScoreBadge";
 
 export const Route = createFileRoute("/app/person/$id")({ component: PersonPage });
 
@@ -75,12 +80,15 @@ function PersonPage() {
   const [confirmArchive, setConfirmArchive] = useState(false);
   const [confirmDelPerson, setConfirmDelPerson] = useState(false);
   const [openAi, setOpenAi] = useState(false);
-  const [tab, setTab] = useState<"timeline" | "attachments" | "insights" | "contact">("timeline");
+  const [tab, setTab] = useState<"timeline" | "attachments" | "insights" | "contact" | "promises">("timeline");
   const [openContactLog, setOpenContactLog] = useState(false);
+  const [openPromise, setOpenPromise] = useState(false);
 
   const { data: currencies = [] } = useCurrencies();
   const { data: allPeople = [] } = useAllPeople();
   const { person, txs, loadingTx, openings, company, rpcBalances, accounts } = usePersonData(id);
+  const { promises, isLoading: loadingPromises } = usePromises(id);
+  const { riskScore, isLoading: loadingRiskScore, recalculate: recalculateRiskScore } = useRiskScore(id);
 
   const people = allPeople.map((p) => ({ id: p.id, name: p.name }));
 
@@ -240,12 +248,13 @@ function PersonPage() {
 
       {/* Tabs + actions */}
       <div className="flex items-center gap-2">
-        <div className="grid grid-cols-4 gap-1 rounded-xl bg-secondary/60 p-1 ring-1 ring-border flex-1">
+        <div className="grid grid-cols-4 md:grid-cols-5 gap-1 rounded-xl bg-secondary/60 p-1 ring-1 ring-border flex-1">
           {[
             { v: "timeline" as const, label: "المعاملات", icon: ClipboardList },
             { v: "contact" as const, label: "التواصل", icon: MessageSquare },
             { v: "attachments" as const, label: "المرفقات", icon: Paperclip },
             { v: "insights" as const, label: "تحليلات", icon: BarChart3 },
+            { v: "promises" as const, label: "وعود السداد", icon: ClipboardList },
           ].map((t) => {
             const Icon = t.icon;
             const active = tab === t.v;
@@ -295,6 +304,7 @@ function PersonPage() {
             }}
             onDelete={(id) => setDelTxId(id)}
             onPay={(t) => setPayingTx(t)}
+            promises={promises}
           />
         ))}
 
@@ -302,6 +312,11 @@ function PersonPage() {
 
       {tab === "insights" && (
         <div className="space-y-3">
+          <RiskScoreCard
+            riskScore={riskScore}
+            isLoading={loadingRiskScore}
+            onRecalculate={recalculateRiskScore}
+          />
           <CustomerHealthCard personId={id} />
           <PersonAnalytics txs={txs} />
         </div>
@@ -319,6 +334,26 @@ function PersonPage() {
             </button>
           </div>
           <ContactLogList personId={id} />
+        </div>
+      )}
+
+      {tab === "promises" && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-[12px] text-muted-foreground font-medium">وعود السداد</p>
+            <Button
+              onClick={() => setOpenPromise(true)}
+              size="sm"
+              className="bg-gradient-primary text-primary-foreground shadow-sm"
+            >
+              <Plus className="size-3.5" /> وعد جديد
+            </Button>
+          </div>
+          <PromiseList
+            promises={promises}
+            isLoading={loadingPromises}
+            onCreateClick={() => setOpenPromise(true)}
+          />
         </div>
       )}
 
@@ -405,6 +440,15 @@ function PersonPage() {
         phone={phone}
         amount={Math.abs(balanceForActions)}
         currency={primaryBalance?.currency?.name}
+      />
+
+      <PromiseDialog
+        open={openPromise}
+        onOpenChange={setOpenPromise}
+        personId={id}
+        onSuccess={() => {
+          // Refetch promises if needed
+        }}
       />
     </div>
   );

@@ -25,6 +25,7 @@ import { Route as AppInsightsRouteImport } from './routes/app.insights'
 import { Route as AppFollowupRouteImport } from './routes/app.followup'
 import { Route as AppExpensesRouteImport } from './routes/app.expenses'
 import { Route as AppExchangeRatesRouteImport } from './routes/app.exchange-rates'
+import { Route as AppDashboardRouteImport } from './routes/app.dashboard'
 import { Route as AppCurrenciesRouteImport } from './routes/app.currencies'
 import { Route as AppCategoriesRouteImport } from './routes/app.categories'
 import { Route as AppBudgetsRouteImport } from './routes/app.budgets'
@@ -122,6 +123,11 @@ const AppExchangeRatesRoute = AppExchangeRatesRouteImport.update({
   path: '/exchange-rates',
   getParentRoute: () => AppRoute,
 } as any)
+const AppDashboardRoute = AppDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppCurrenciesRoute = AppCurrenciesRouteImport.update({
   id: '/currencies',
   path: '/currencies',
@@ -214,6 +220,7 @@ export interface FileRoutesByFullPath {
   '/app/budgets': typeof AppBudgetsRoute
   '/app/categories': typeof AppCategoriesRoute
   '/app/currencies': typeof AppCurrenciesRoute
+  '/app/dashboard': typeof AppDashboardRoute
   '/app/exchange-rates': typeof AppExchangeRatesRoute
   '/app/expenses': typeof AppExpensesRoute
   '/app/followup': typeof AppFollowupRoute
@@ -247,6 +254,7 @@ export interface FileRoutesByTo {
   '/app/budgets': typeof AppBudgetsRoute
   '/app/categories': typeof AppCategoriesRoute
   '/app/currencies': typeof AppCurrenciesRoute
+  '/app/dashboard': typeof AppDashboardRoute
   '/app/exchange-rates': typeof AppExchangeRatesRoute
   '/app/expenses': typeof AppExpensesRoute
   '/app/followup': typeof AppFollowupRoute
@@ -281,6 +289,7 @@ export interface FileRoutesById {
   '/app/budgets': typeof AppBudgetsRoute
   '/app/categories': typeof AppCategoriesRoute
   '/app/currencies': typeof AppCurrenciesRoute
+  '/app/dashboard': typeof AppDashboardRoute
   '/app/exchange-rates': typeof AppExchangeRatesRoute
   '/app/expenses': typeof AppExpensesRoute
   '/app/followup': typeof AppFollowupRoute
@@ -317,6 +326,7 @@ export interface FileRouteTypes {
     | '/app/budgets'
     | '/app/categories'
     | '/app/currencies'
+    | '/app/dashboard'
     | '/app/exchange-rates'
     | '/app/expenses'
     | '/app/followup'
@@ -350,6 +360,7 @@ export interface FileRouteTypes {
     | '/app/budgets'
     | '/app/categories'
     | '/app/currencies'
+    | '/app/dashboard'
     | '/app/exchange-rates'
     | '/app/expenses'
     | '/app/followup'
@@ -383,6 +394,7 @@ export interface FileRouteTypes {
     | '/app/budgets'
     | '/app/categories'
     | '/app/currencies'
+    | '/app/dashboard'
     | '/app/exchange-rates'
     | '/app/expenses'
     | '/app/followup'
@@ -528,6 +540,13 @@ declare module '@tanstack/react-router' {
       path: '/exchange-rates'
       fullPath: '/app/exchange-rates'
       preLoaderRoute: typeof AppExchangeRatesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/dashboard': {
+      id: '/app/dashboard'
+      path: '/dashboard'
+      fullPath: '/app/dashboard'
+      preLoaderRoute: typeof AppDashboardRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/currencies': {
@@ -677,6 +696,7 @@ interface AppRouteChildren {
   AppBudgetsRoute: typeof AppBudgetsRoute
   AppCategoriesRoute: typeof AppCategoriesRoute
   AppCurrenciesRoute: typeof AppCurrenciesRoute
+  AppDashboardRoute: typeof AppDashboardRoute
   AppExchangeRatesRoute: typeof AppExchangeRatesRoute
   AppExpensesRoute: typeof AppExpensesRoute
   AppFollowupRoute: typeof AppFollowupRoute
@@ -698,6 +718,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppBudgetsRoute: AppBudgetsRoute,
   AppCategoriesRoute: AppCategoriesRoute,
   AppCurrenciesRoute: AppCurrenciesRoute,
+  AppDashboardRoute: AppDashboardRoute,
   AppExchangeRatesRoute: AppExchangeRatesRoute,
   AppExpensesRoute: AppExpensesRoute,
   AppFollowupRoute: AppFollowupRoute,
