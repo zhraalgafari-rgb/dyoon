@@ -1,7 +1,13 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { MappedTx } from "./importExcel";
 
-interface CurrencyLite { id: string; name: string; symbol: string; is_base: boolean; rate: number }
+interface CurrencyLite {
+  id: string;
+  name: string;
+  symbol: string;
+  is_base: boolean;
+  rate: number;
+}
 
 /** Best-effort match for a per-row currency name/symbol to one of the user's currencies. */
 function matchCurrency(raw: string | null, currencies: CurrencyLite[], baseId: string): string {
@@ -24,10 +30,16 @@ export async function commitImportedTxs(
   baseCurrencyId: string,
   rows: MappedTx[],
 ): Promise<{ inserted: number; failed: number; people: number; openings: number }> {
-  const { data: currencies } = await supabase.from("currencies").select("id,name,symbol,is_base,rate").eq("user_id", userId);
+  const { data: currencies } = await supabase
+    .from("currencies")
+    .select("id,name,symbol,is_base,rate")
+    .eq("user_id", userId);
   const curs = (currencies ?? []) as CurrencyLite[];
 
-  const { data: existing } = await supabase.from("people").select("id,name,phone").eq("user_id", userId);
+  const { data: existing } = await supabase
+    .from("people")
+    .select("id,name,phone")
+    .eq("user_id", userId);
   const peopleMap = new Map<string, { id: string; phone: string | null }>(
     ((existing as { id: string; name: string; phone: string | null }[]) ?? []).map((p) => [
       p.name.trim().toLowerCase(),
@@ -50,15 +62,32 @@ export async function commitImportedTxs(
       .from("people")
       .insert(newPeople.map((p) => ({ ...p, user_id: userId })))
       .select("id,name,phone");
-    for (const p of (inserted as { id: string; name: string; phone: string | null }[] | null) ?? []) {
+    for (const p of (inserted as { id: string; name: string; phone: string | null }[] | null) ??
+      []) {
       peopleMap.set(p.name.trim().toLowerCase(), { id: p.id, phone: p.phone });
       createdPeople += 1;
     }
   }
 
   // Build transactions & opening balances payloads
-  const txPayload: { user_id: string; person_id: string; currency_id: string; amount: number; direction: string; details: string | null; transaction_date: string; rate_at_tx: number }[] = [];
-  const openPayload: { user_id: string; person_id: string; currency_id: string; amount: number; direction: string; note: string }[] = [];
+  const txPayload: {
+    user_id: string;
+    person_id: string;
+    currency_id: string;
+    amount: number;
+    direction: string;
+    details: string | null;
+    transaction_date: string;
+    rate_at_tx: number;
+  }[] = [];
+  const openPayload: {
+    user_id: string;
+    person_id: string;
+    currency_id: string;
+    amount: number;
+    direction: string;
+    note: string;
+  }[] = [];
   for (const r of rows) {
     const person = peopleMap.get(r.name.trim().toLowerCase());
     if (!person) continue;

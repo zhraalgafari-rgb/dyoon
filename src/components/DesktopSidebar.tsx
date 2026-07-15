@@ -62,7 +62,7 @@ export function DesktopSidebar({ isOpen }: Props) {
 
   return (
     <aside
-      className={`hidden md:flex flex-col h-screen sticky top-0 bg-gradient-to-b from-card to-card/95 border-l border-border/50 overflow-hidden z-40 transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0 w-64 lg:w-72 xl:w-80" : "-translate-x-full w-64 lg:w-72 xl:w-80"
+      className={`hidden md:flex flex-col h-screen top-0 bg-gradient-to-b from-card to-card/95 border-l border-border/50 overflow-hidden z-40 transition-transform duration-300 ease-in-out ${isOpen ? "sticky translate-x-0 w-64 lg:w-72 xl:w-80" : "absolute -translate-x-full w-64 lg:w-72 xl:w-80"
         }`}
     >
       {/* Logo Section */}

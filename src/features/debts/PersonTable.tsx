@@ -1,14 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { fmtMoney, fmtDate } from "@/lib/format";
-import type { PersonBalance } from "./PersonRow";
-import type { PersonCurrencyBalance, Currency } from "@/hooks/useDashboardData";
+import type { PersonBalance } from "./types";
+import type { Person, PersonCurrencyBalance, Currency } from "@/hooks/useDashboardData";
 import { RowActions } from "@/components/common/RowActions";
-
-interface Person {
-  id: string;
-  name: string;
-  phone?: string | null;
-}
 
 interface Props {
   rows: {
@@ -80,26 +74,52 @@ export function PersonTable({ rows, onEdit, onArchive, onDelete }: Props) {
                           <span className="text-muted-foreground text-xs pr-2">↳</span>
                         )}
                       </td>
-                      <td className="px-2 py-1.5 md:px-3 md:py-2 hidden sm:table-cell text-muted-foreground tabular-nums" dir="ltr">
-                        {bi === 0 ? (person.phone || "—") : (
-                          <span className="inline-block px-1 py-0.5 rounded bg-muted text-xs font-bold border">{curr?.name ?? sym}</span>
+                      <td
+                        className="px-2 py-1.5 md:px-3 md:py-2 hidden sm:table-cell text-muted-foreground tabular-nums"
+                        dir="ltr"
+                      >
+                        {bi === 0 ? (
+                          person.phone || "—"
+                        ) : (
+                          <span className="inline-block px-1 py-0.5 rounded bg-muted text-xs font-bold border">
+                            {curr?.name ?? sym}
+                          </span>
                         )}
                       </td>
                       <td className="px-2 py-1.5 md:px-3 md:py-2 text-center tabular-nums text-muted-foreground">
                         {bi === 0 ? balance.count : ""}
                       </td>
                       <td className="px-2 py-1.5 md:px-3 md:py-2 text-left tabular-nums font-semibold text-success bg-success/5">
-                        {b.totalCredit > 0 ? <>{fmtMoney(b.totalCredit)} <span className="opacity-60 text-xs">{sym}</span></> : "—"}
+                        {b.totalCredit > 0 ? (
+                          <>
+                            {fmtMoney(b.totalCredit)}{" "}
+                            <span className="opacity-60 text-xs">{sym}</span>
+                          </>
+                        ) : (
+                          "—"
+                        )}
                       </td>
                       <td className="px-2 py-1.5 md:px-3 md:py-2 text-left tabular-nums font-semibold text-danger bg-danger/5">
-                        {b.totalDebit > 0 ? <>{fmtMoney(b.totalDebit)} <span className="opacity-60 text-xs">{sym}</span></> : "—"}
+                        {b.totalDebit > 0 ? (
+                          <>
+                            {fmtMoney(b.totalDebit)}{" "}
+                            <span className="opacity-60 text-xs">{sym}</span>
+                          </>
+                        ) : (
+                          "—"
+                        )}
                       </td>
                       <td className="px-2 py-1.5 md:px-3 md:py-2 text-left">
                         {settled ? (
-                          <span className="inline-block px-1.5 py-0.5 rounded-full bg-secondary text-muted-foreground text-xs font-bold border border-border/50">مسوّى</span>
+                          <span className="inline-block px-1.5 py-0.5 rounded-full bg-secondary text-muted-foreground text-xs font-bold border border-border/50">
+                            مسوّى
+                          </span>
                         ) : (
-                          <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-xs font-black tabular-nums ${isCredit ? "bg-success-soft text-success ring-1 ring-success/30" : "bg-danger-soft text-danger ring-1 ring-danger/30"}`}>
-                            {isCredit ? "" : "-"}{fmtMoney(Math.abs(b.net))}
+                          <span
+                            className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-xs font-black tabular-nums ${isCredit ? "bg-success-soft text-success ring-1 ring-success/30" : "bg-danger-soft text-danger ring-1 ring-danger/30"}`}
+                          >
+                            {isCredit ? "" : "-"}
+                            {fmtMoney(Math.abs(b.net))}
                             <span className="opacity-70 text-xs">{sym}</span>
                           </span>
                         )}
@@ -130,7 +150,9 @@ export function PersonTable({ rows, onEdit, onArchive, onDelete }: Props) {
                   key={person.id}
                   className={`${zebra} hover:bg-primary/5 transition-colors [&>td]:border [&>td]:border-border`}
                 >
-                  <td className="px-2 py-1.5 md:px-3 md:py-2 text-muted-foreground tabular-nums text-center border-l-0">{i + 1}</td>
+                  <td className="px-2 py-1.5 md:px-3 md:py-2 text-muted-foreground tabular-nums text-center border-l-0">
+                    {i + 1}
+                  </td>
                   <td className="px-2 py-1.5 md:px-3 md:py-2">
                     <Link
                       to="/app/person/$id"
@@ -140,16 +162,29 @@ export function PersonTable({ rows, onEdit, onArchive, onDelete }: Props) {
                       {person.name}
                     </Link>
                   </td>
-                  <td className="px-2 py-1.5 md:px-3 md:py-2 hidden sm:table-cell text-muted-foreground tabular-nums" dir="ltr">
+                  <td
+                    className="px-2 py-1.5 md:px-3 md:py-2 hidden sm:table-cell text-muted-foreground tabular-nums"
+                    dir="ltr"
+                  >
                     {person.phone || "—"}
                   </td>
-                  <td className="px-2 py-1.5 md:px-3 md:py-2 text-center tabular-nums text-muted-foreground">0</td>
-                  <td className="px-2 py-1.5 md:px-3 md:py-2 text-left tabular-nums text-muted-foreground">—</td>
-                  <td className="px-2 py-1.5 md:px-3 md:py-2 text-left tabular-nums text-muted-foreground">—</td>
-                  <td className="px-2 py-1.5 md:px-3 md:py-2 text-left">
-                    <span className="inline-block px-2 py-1 rounded-lg bg-secondary text-muted-foreground text-xs font-bold border border-border/50">جديد</span>
+                  <td className="px-2 py-1.5 md:px-3 md:py-2 text-center tabular-nums text-muted-foreground">
+                    0
                   </td>
-                  <td className="px-2 py-1.5 md:px-3 md:py-2 text-center hidden xs:table-cell text-muted-foreground tabular-nums">—</td>
+                  <td className="px-2 py-1.5 md:px-3 md:py-2 text-left tabular-nums text-muted-foreground">
+                    —
+                  </td>
+                  <td className="px-2 py-1.5 md:px-3 md:py-2 text-left tabular-nums text-muted-foreground">
+                    —
+                  </td>
+                  <td className="px-2 py-1.5 md:px-3 md:py-2 text-left">
+                    <span className="inline-block px-2 py-1 rounded-lg bg-secondary text-muted-foreground text-xs font-bold border border-border/50">
+                      جديد
+                    </span>
+                  </td>
+                  <td className="px-2 py-1.5 md:px-3 md:py-2 text-center hidden xs:table-cell text-muted-foreground tabular-nums">
+                    —
+                  </td>
                   {hasActions && (
                     <td className="px-1 py-1 md:px-2 md:py-2 text-center border-r-0">
                       <RowActions
@@ -164,7 +199,10 @@ export function PersonTable({ rows, onEdit, onArchive, onDelete }: Props) {
             })}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={hasActions ? 9 : 8} className="text-center py-8 text-muted-foreground text-xs md:text-sm bg-secondary/20">
+                <td
+                  colSpan={hasActions ? 9 : 8}
+                  className="text-center py-8 text-muted-foreground text-xs md:text-sm bg-secondary/20"
+                >
                   لا توجد بيانات
                 </td>
               </tr>

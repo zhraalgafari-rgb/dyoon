@@ -115,7 +115,7 @@ function AppLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-background md:bg-muted/30 md:flex flex-row">
+    <div className="min-h-screen bg-background md:bg-muted/30 md:flex flex-row relative">
       <DesktopSidebar isOpen={sidebarOpen} />
 
       <div className="flex-1 flex flex-col min-h-screen relative w-full md:bg-background md:shadow-2xl md:border-x border-border/50">

@@ -1,7 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { processRecurringFn } from "@/lib/jobs.functions";
-import { type PersonBalance } from "@/features/debts/PersonRow";
+import { type PersonBalance } from "@/features/debts/types";
+
+export interface RpcTotalsRow {
+  currency_id: string;
+  owed: number;
+  owe: number;
+}
 
 export interface Currency {
   id: string;
@@ -45,12 +51,21 @@ export function useDashboardData(userId?: string) {
       if (userId) processRecurringFn().catch(console.error);
 
       const [peopleRes, balancesRes, currenciesRes] = await Promise.all([
-        supabase.from("people").select("*").eq("is_archived", false).order("created_at", { ascending: false }).limit(10000),
+        supabase
+          .from("people")
+          .select("*")
+          .eq("is_archived", false)
+          .order("created_at", { ascending: false })
+          .limit(10000),
         // استخدام view_person_balances_detailed التي تحافظ على الفصل الكامل للعملات
-        supabase.from("view_person_balances_detailed" as any).select("*").eq("user_id", userId).limit(50000),
+        supabase
+          .from("view_person_balances_detailed" as any)
+          .select("*")
+          .eq("user_id", userId)
+          .limit(50000),
         supabase.from("currencies").select("*").order("is_base", { ascending: false }),
       ]);
-      
+
       const p = peopleRes.data;
       const dbBalances = balancesRes.data || [];
       const c = currenciesRes.data;
@@ -60,10 +75,10 @@ export function useDashboardData(userId?: string) {
       if (currenciesRes.error) console.error("Error fetching currencies:", currenciesRes.error);
 
       // استدعاء RPC للحصول على الإجماليات (يعتمد على auth.uid() داخل الدالة الآن)
-      let rpcTotals: any[] = [];
+      let rpcTotals: RpcTotalsRow[] = [];
       if (userId) {
         const { data: rpcData, error: rpcErr } = await (supabase.rpc as any)(
-          "rpc_get_dashboard_totals"
+          "rpc_get_dashboard_totals",
         );
         if (!rpcErr && rpcData) {
           rpcTotals = rpcData;
@@ -127,7 +142,7 @@ export function useDashboardData(userId?: string) {
         people: (p ?? []) as Person[],
         personBalances: map,
         personCurrencyBalances: multiMap,
-        rpcTotals: rpcTotals as any[],
+        rpcTotals: rpcTotals,
         currencies: (c ?? []) as Currency[],
       };
     },
