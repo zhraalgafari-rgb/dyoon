@@ -14,7 +14,6 @@ interface Props {
 
 export function FollowupBucketCard({ bucket, onGenerateMessage, onSendWhatsApp }: Props) {
   const meta = severityMeta[bucket.severity];
-  const [showActions, setShowActions] = useState(false);
 
   function getSuggestions(b: Bucket): string[] {
     const out: string[] = [];

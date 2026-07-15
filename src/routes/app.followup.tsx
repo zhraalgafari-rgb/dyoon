@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -78,7 +78,7 @@ function FollowupPage() {
   };
 
   // Local notification for critical/late buckets once per session
-  useMemo(() => {
+  useEffect(() => {
     if (isLoading || buckets.length === 0) return;
     const crit = buckets.filter((b) => b.severity === "critical" || b.severity === "late");
     if (crit.length === 0) return;
@@ -303,7 +303,7 @@ function FollowupPage() {
           <div className="text-[11px] leading-relaxed">
             <div className="font-bold text-danger mb-0.5">إجمالي المبالغ المعرضة للخطر:</div>
             <div className="flex flex-wrap gap-1.5">
-              {totalAtRisk.map(([cur, amt]) => (
+              {totalAtRisk.map(([cur, amt]: [string, number]) => (
                 <span key={cur} className="bg-card border rounded px-1.5 py-0.5 font-black tabular-nums text-danger">{fmtMoney(amt)} {cur}</span>
               ))}
             </div>
@@ -365,7 +365,7 @@ function FollowupPage() {
           {/* Regular Followup Buckets */}
           {filtered.length > 0 && (
             <div className="space-y-2">
-              {filtered.map((b, index) => (
+              {filtered.map((b: Bucket, index: number) => (
                 <div key={`${b.person.id}-${b.currency}`} className="animate-slide-up-fade" style={{ animationDelay: `${index * 50}ms` }}>
                   <FollowupBucketCard
                     bucket={b}

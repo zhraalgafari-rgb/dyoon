@@ -7,6 +7,7 @@ import { Bell, AlarmClock, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/common/PageHeader";
 import { EmptyState } from "@/components/EmptyState";
+import { ListSkeleton } from "@/components/Skeleton";
 import { completeReminder, snoozeReminder, type Reminder } from "@/lib/reminders";
 import { syncRemindersFn } from "@/lib/jobs.functions";
 import { ReminderCard, REPEAT_LABEL } from "@/features/reminders/ReminderCard";
@@ -25,14 +26,20 @@ function RemindersPage() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Reminder | null>(null);
   const [syncing, setSyncing] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
-    const [{ data: r }, { data: p }] = await Promise.all([
-      supabase.from("reminders").select("*").order("due_date"),
-      supabase.from("people").select("id,name").eq("is_archived", false),
-    ]);
-    setItems((r ?? []) as Reminder[]);
-    setPeople((p ?? []) as Person[]);
+    setLoading(true);
+    try {
+      const [{ data: r }, { data: p }] = await Promise.all([
+        supabase.from("reminders").select("*").order("due_date"),
+        supabase.from("people").select("id,name").eq("is_archived", false),
+      ]);
+      setItems((r ?? []) as Reminder[]);
+      setPeople((p ?? []) as Person[]);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -54,7 +61,7 @@ function RemindersPage() {
 
   const toggleDone = async (r: Reminder) => {
     if (r.is_done) {
-      await supabase.from("reminders").update({ is_done: false }).eq("id", r.id);
+      await supabase.from("reminders").update({ is_done: false }).eq("id", r.id) as any;
     } else {
       await completeReminder(r);
       if (r.repeat !== "none") toast.success(`تم. التالي: ${REPEAT_LABEL[r.repeat]}`);
@@ -70,8 +77,9 @@ function RemindersPage() {
 
   const del = async (id: string) => {
     if (!confirm("حذف التذكير؟")) return;
-    await supabase.from("reminders").delete().eq("id", id);
-    toast.success("تم الحذف"); load();
+    await supabase.from("reminders").delete().eq("id", id) as any;
+    toast.success("تم الحذف");
+    load();
   };
 
   const filtered = useMemo(() => {
@@ -137,8 +145,8 @@ function RemindersPage() {
             key={t.id}
             onClick={() => setFilter(t.id)}
             className={`shrink-0 px-3 md:px-4 py-2 md:py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all duration-200 flex items-center gap-1.5 md:gap-2 ${filter === t.id
-                ? "bg-gradient-primary text-primary-foreground shadow-glow scale-105"
-                : "bg-secondary hover:bg-secondary/70 hover:scale-105"
+              ? "bg-gradient-primary text-primary-foreground shadow-glow scale-105"
+              : "bg-secondary hover:bg-secondary/70 hover:scale-105"
               }`}
           >
             <span>{t.label}</span>
@@ -147,7 +155,9 @@ function RemindersPage() {
         ))}
       </div>
 
-      {filtered.length === 0 ? (
+      {loading ? (
+        <ListSkeleton rows={5} />
+      ) : filtered.length === 0 ? (
         <EmptyState icon={AlarmClock} title="لا توجد تذكيرات" description="أضف تذكيراً أو زامن من الديون التي لها تاريخ استحقاق" />
       ) : (
         <div className="space-y-2 md:space-y-3 animate-in fade-in">

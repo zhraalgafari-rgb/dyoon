@@ -13,9 +13,9 @@ import { toast } from "sonner";
 import { fmtDate, fmtTime, formatDistanceToNow } from "@/lib/format";
 import { listAlerts, completeAlert, snoozeAlert, scheduleFollowup, logFollowupAttempt, listFollowupLogs } from "@/lib/alerts/server";
 import type { PersonLite } from "@/hooks/usePeople";
-import type { SmartAlert, FollowupChannel } from "@/lib/alerts/types";
+import type { SmartAlert } from "@/lib/alerts/types";
 
-const CHANNELS: { id: FollowupChannel; label: string; icon: string }[] = [
+const CHANNELS: { id: "whatsapp" | "call" | "email" | "note" | "other"; label: string; icon: string }[] = [
   { id: "whatsapp", label: "واتساب", icon: "💬" },
   { id: "call", label: "اتصال", icon: "📞" },
   { id: "email", label: "بريد", icon: "📧" },
@@ -36,26 +36,25 @@ function toLocalInput(d: Date): string {
 }
 
 export function FollowupManager({ userId, people }: { userId: string; people: PersonLite[] }) {
-  const { user } = useAuth();
   const qc = useQueryClient();
 
   const [personId, setPersonId] = useState<string>("");
   const [newName, setNewName] = useState("");
   const [dueDate, setDueDate] = useState(() => toLocalInput(new Date(Date.now() + 86400000)));
   const [note, setNote] = useState("");
-  const [channel, setChannel] = useState<FollowupChannel>("whatsapp");
+  const [channel, setChannel] = useState<"whatsapp" | "call" | "email" | "note" | "other">("whatsapp");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const [activeSection, setActiveSection] = useState<"scheduled" | "schedule" | "log" | null>(null);
 
   const { data: alerts = [], isLoading } = useQuery<SmartAlert[]>({
     queryKey: ["alerts", userId],
-    queryFn: () => listAlerts({ data: { userId } }),
+    queryFn: async () => await listAlerts({ data: { userId } } as any),
     enabled: !!userId,
   });
   const { data: logs = [] } = useQuery({
     queryKey: ["followupLogs", userId],
-    queryFn: () => listFollowupLogs({ data: { userId } }),
+    queryFn: async () => await listFollowupLogs({ data: { userId } } as any),
     enabled: !!userId,
   });
 
@@ -74,12 +73,10 @@ export function FollowupManager({ userId, people }: { userId: string; people: Pe
   };
 
   const doSchedule = async () => {
-    if (!user || !personId || !note.trim()) return toast.error("اختر العميل واكتب الملاحظة");
+    if (!userId || !personId || !note.trim()) return toast.error("اختر العميل واكتب الملاحظة");
     setBusy(true);
     try {
-      await scheduleFollowup({
-        data: { userId: user.id, personId, transactionId: null, dueAt: new Date(dueDate).toISOString(), body: note.trim() },
-      });
+      await scheduleFollowup({ data: { userId, personId, transactionId: null, dueAt: new Date(dueDate).toISOString(), body: note.trim() } } as any);
       setNote("");
       refresh();
       toast.success("تم جدولة المتابعة");
@@ -92,12 +89,10 @@ export function FollowupManager({ userId, people }: { userId: string; people: Pe
   };
 
   const doLog = async () => {
-    if (!user || !personId) return toast.error("اختر العميل");
+    if (!userId || !personId) return toast.error("اختر العميل");
     setBusy(true);
     try {
-      await logFollowupAttempt({
-        data: { userId: user.id, personId, transactionId: null, channel, message: message.trim() || null },
-      });
+      await logFollowupAttempt({ data: { userId, personId, transactionId: null, channel, message: message.trim() || null } } as any);
       setMessage("");
       refresh();
       toast.success("تم تسجيل المحاولة");
@@ -176,7 +171,7 @@ export function FollowupManager({ userId, people }: { userId: string; people: Pe
                       {a.status === "pending" && (
                         <div className="flex items-center gap-1 mt-2">
                           <button
-                            onClick={async () => { await completeAlert({ data: { userId, id: a.id } }); refresh(); }}
+                            onClick={async () => { await completeAlert({ data: { userId, id: a.id } } as any); refresh(); }}
                             className="text-[10px] inline-flex items-center gap-0.5 px-2 py-1 rounded-lg bg-success/10 text-success hover:bg-success/20 transition-colors font-medium"
                           >
                             <Check className="size-2.5" /> إكمال
@@ -185,7 +180,7 @@ export function FollowupManager({ userId, people }: { userId: string; people: Pe
                             {SNOOZE_OPTIONS.slice(0, 2).map((opt) => (
                               <button
                                 key={opt.days}
-                                onClick={async () => { await snoozeAlert({ data: { userId, id: a.id, days: opt.days } }); refresh(); }}
+                                onClick={async () => { await snoozeAlert({ data: { userId, id: a.id, days: opt.days } } as any); refresh(); }}
                                 className="text-[9px] px-1.5 py-0.5 rounded border bg-secondary hover:bg-primary hover:text-primary-foreground transition-colors"
                               >
                                 {opt.icon} {opt.label}
@@ -251,7 +246,7 @@ export function FollowupManager({ userId, people }: { userId: string; people: Pe
             </div>
             <div className="space-y-1">
               <Label className="text-[11px]">القناة</Label>
-              <Select value={channel} onValueChange={(v) => setChannel(v as FollowupChannel)}>
+              <Select value={channel} onValueChange={(v) => setChannel(v as "whatsapp" | "call" | "email" | "note" | "other")}>
                 <SelectTrigger className="h-8 text-[12px]"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {CHANNELS.map((c) => <SelectItem key={c.id} value={c.id}>{c.icon} {c.label}</SelectItem>)}

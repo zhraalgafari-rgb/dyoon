@@ -24,7 +24,6 @@ export const createTransactionNote = createServerFn({ method: "POST" }).handler(
   const { data: note, error } = await sb
     .from("transaction_notes")
     .insert({
-      user_id: userId,
       transaction_id: transactionId,
       body,
       has_reminder: parsed ? true : false,
@@ -104,7 +103,6 @@ export const scheduleFollowup = createServerFn({ method: "POST" }).handler(async
   const { data: alert, error } = await sb
     .from("smart_alerts")
     .insert({
-      user_id: userId,
       source_type: "followup",
       source_id: genId(),
       person_id: personId,
@@ -134,7 +132,6 @@ export const logFollowupAttempt = createServerFn({ method: "POST" }).handler(asy
   const { data: log, error } = await sb
     .from("followup_logs")
     .insert({
-      user_id: userId,
       person_id: personId,
       transaction_id: transactionId ?? null,
       channel,
