@@ -1,4 +1,5 @@
 import { BarChart3, LineChart, PieChart, DownloadCloud, Printer } from "lucide-react";
+import type { ComponentType } from "react";
 import type { ReportCurrency } from "./types";
 
 export type ReportsTab = "overview" | "monthly" | "distribution";
@@ -18,19 +19,22 @@ export function ReportsTabNav({
   selectedCurrencyId,
   onCurrencyChange,
 }: Props) {
-  const tabBtn = (tab: ReportsTab, icon: typeof BarChart3, label: string) => (
-    <button
-      onClick={() => onTabChange(tab)}
-      className={`px-3 py-2 text-sm font-bold rounded-t-lg transition-colors ${
-        activeTab === tab
-          ? "text-primary border-b-2 border-primary bg-primary/5"
-          : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
-      }`}
-    >
-      {icon({ className: "size-4 inline me-1.5" })}
-      {label}
-    </button>
-  );
+  const tabBtn = (tab: ReportsTab, icon: ComponentType<{ className?: string }>, label: string) => {
+    const Icon = icon;
+    return (
+      <button
+        onClick={() => onTabChange(tab)}
+        className={`px-3 py-2 text-sm font-bold rounded-t-lg transition-colors ${
+          activeTab === tab
+            ? "text-primary border-b-2 border-primary bg-primary/5"
+            : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+        }`}
+      >
+        <Icon className="size-4 inline me-1.5" />
+        {label}
+      </button>
+    );
+  };
 
   return (
     <div className="flex items-center gap-2 border-b border-border/50 pb-1">
