@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,8 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const [googleBusy, setGoogleBusy] = useState(false);
+  const googleClicking = useRef(false);
 
   useEffect(() => {
     if (!loading && user) navigate({ to: "/app" });
@@ -37,16 +39,31 @@ function AuthPage() {
   };
 
   const handleGoogle = async () => {
-    setBusy(true);
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
-    setBusy(false);
-    if (error) {
-      toast.error("فشل تسجيل الدخول بحساب جوجل: " + error.message);
+    // منع الضغط المزدوج الذي يُسبب خطأ "Error creating flow state"
+    if (googleClicking.current) return;
+    googleClicking.current = true;
+    setGoogleBusy(true);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: "offline",
+            prompt: "consent",
+          },
+        },
+      });
+      if (error) {
+        toast.error("فشل تسجيل الدخول بحساب جوجل: " + error.message);
+        setGoogleBusy(false);
+        googleClicking.current = false;
+      }
+      // في حالة النجاح يتم التوجيه إلى Google فلا نُعيد الحالة
+    } catch {
+      toast.error("حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.");
+      setGoogleBusy(false);
+      googleClicking.current = false;
     }
   };
 
@@ -70,10 +87,15 @@ function AuthPage() {
             type="button"
             variant="outline"
             className="w-full mb-4 h-11 font-semibold"
-            disabled={busy}
+            disabled={busy || googleBusy}
             onClick={handleGoogle}
           >
-            <GoogleIcon /> المتابعة باستخدام Google
+            {googleBusy ? (
+              <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+            ) : (
+              <GoogleIcon />
+            )}
+            {googleBusy ? "جاري التوجيه إلى Google..." : "المتابعة باستخدام Google"}
           </Button>
 
           <div className="relative mb-4">

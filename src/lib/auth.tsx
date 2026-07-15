@@ -20,23 +20,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
-        if (cancelled) return;
-        setSession(s);
-        setUser(s?.user ?? null);
-        setInitializing(false);
-      });
-      const { data: { session: s } } = await supabase.auth.getSession();
+
+    // سجّل المستمع أولاً (بشكل متزامن) حتى لا تفوتنا أي أحداث مصادقة
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
       if (cancelled) return;
       setSession(s);
       setUser(s?.user ?? null);
       setInitializing(false);
-      return () => {
-        cancelled = true;
-        subscription.unsubscribe();
-      };
-    })();
+    });
+
+    // ثم اجلب الجلسة الحالية بشكل غير متزامن
+    supabase.auth.getSession().then(({ data: { session: s } }) => {
+      if (cancelled) return;
+      setSession(s);
+      setUser(s?.user ?? null);
+      setInitializing(false);
+    });
+
+    // هذا الـ cleanup سيصل إلى useEffect الآن بشكل صحيح
+    return () => {
+      cancelled = true;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
