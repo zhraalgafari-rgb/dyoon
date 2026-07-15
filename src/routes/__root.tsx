@@ -1,4 +1,4 @@
-import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { Outlet, Link, createRootRoute, HeadContent, Scripts, useRouterState } from "@tanstack/react-router";
 import appCss from "../styles.css?url";
 import { AuthProvider } from "@/lib/auth";
 import { ThemeProvider } from "@/lib/theme";
@@ -73,15 +73,24 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
+  // استثناء مسارات المصادقة من الـ Gates لأنها تحجب صفحة callback
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isAuthRoute = pathname.startsWith("/auth");
+
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <AuthProvider>
-          <PinLockGate>
-            <OnboardingGate>
-              <Outlet />
-            </OnboardingGate>
-          </PinLockGate>
+          {isAuthRoute ? (
+            // مسارات /auth و /auth/callback تُعرض مباشرةً بدون أي gates
+            <Outlet />
+          ) : (
+            <PinLockGate>
+              <OnboardingGate>
+                <Outlet />
+              </OnboardingGate>
+            </PinLockGate>
+          )}
           <Toaster position="top-center" richColors />
         </AuthProvider>
       </ThemeProvider>
