@@ -731,6 +731,619 @@ export type Database = {
         ]
       }
     }
+      customer_risk_scores: {
+        Row: {
+          classification: string
+          computed_at: string
+          factors: Json
+          person_id: string
+          score: number
+          user_id: string
+        }
+        Insert: {
+          classification: string
+          computed_at?: string
+          factors?: Json
+          person_id: string
+          score: number
+          user_id: string
+        }
+        Update: {
+          classification?: string
+          computed_at?: string
+          factors?: Json
+          person_id?: string
+          score?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_risk_scores_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: true
+            referencedRelation: "people"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      followup_logs: {
+        Row: {
+          channel: Database["public"]["Enums"]["followup_channel"]
+          created_at: string
+          id: string
+          message: string | null
+          outcome: string | null
+          person_id: string | null
+          transaction_id: string | null
+          user_id: string
+        }
+        Insert: {
+          channel?: Database["public"]["Enums"]["followup_channel"]
+          created_at?: string
+          id?: string
+          message?: string | null
+          outcome?: string | null
+          person_id?: string | null
+          transaction_id?: string | null
+          user_id: string
+        }
+        Update: {
+          channel?: Database["public"]["Enums"]["followup_channel"]
+          created_at?: string
+          id?: string
+          message?: string | null
+          outcome?: string | null
+          person_id?: string | null
+          transaction_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "followup_logs_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "people"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "followup_logs_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_delivery_logs: {
+        Row: {
+          channel: Database["public"]["Enums"]["notif_channel"]
+          created_at: string | null
+          error_code: string | null
+          error_message: string | null
+          id: string
+          job_id: string
+          latency_ms: number | null
+          provider: string | null
+          request_payload: Json | null
+          response_payload: Json | null
+          status: string
+        }
+        Insert: {
+          channel: Database["public"]["Enums"]["notif_channel"]
+          created_at?: string | null
+          error_code?: string | null
+          error_message?: string | null
+          id?: string
+          job_id: string
+          latency_ms?: number | null
+          provider?: string | null
+          request_payload?: Json | null
+          response_payload?: Json | null
+          status: string
+        }
+        Update: {
+          channel?: Database["public"]["Enums"]["notif_channel"]
+          created_at?: string | null
+          error_code?: string | null
+          error_message?: string | null
+          id?: string
+          job_id?: string
+          latency_ms?: number | null
+          provider?: string | null
+          request_payload?: Json | null
+          response_payload?: Json | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_delivery_logs_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "notification_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_events: {
+        Row: {
+          channel: Database["public"]["Enums"]["notif_channel"] | null
+          created_at: string | null
+          event_type: string
+          id: string
+          job_id: string
+          metadata: Json | null
+          provider: string | null
+          provider_message_id: string | null
+          user_id: string
+        }
+        Insert: {
+          channel?: Database["public"]["Enums"]["notif_channel"] | null
+          created_at?: string | null
+          event_type: string
+          id?: string
+          job_id: string
+          metadata?: Json | null
+          provider?: string | null
+          provider_message_id?: string | null
+          user_id: string
+        }
+        Update: {
+          channel?: Database["public"]["Enums"]["notif_channel"] | null
+          created_at?: string | null
+          event_type?: string
+          id?: string
+          job_id?: string
+          metadata?: Json | null
+          provider?: string | null
+          provider_message_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_events_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "notification_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_inbox: {
+        Row: {
+          alert_id: string | null
+          archived_at: string | null
+          body: string | null
+          category: Database["public"]["Enums"]["notif_category"]
+          created_at: string | null
+          data: Json | null
+          id: string
+          is_read: boolean | null
+          job_id: string | null
+          read_at: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          alert_id?: string | null
+          archived_at?: string | null
+          body?: string | null
+          category: Database["public"]["Enums"]["notif_category"]
+          created_at?: string | null
+          data?: Json | null
+          id?: string
+          is_read?: boolean | null
+          job_id?: string | null
+          read_at?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          alert_id?: string | null
+          archived_at?: string | null
+          body?: string | null
+          category?: Database["public"]["Enums"]["notif_category"]
+          created_at?: string | null
+          data?: Json | null
+          id?: string
+          is_read?: boolean | null
+          job_id?: string | null
+          read_at?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_inbox_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "smart_alerts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_inbox_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "notification_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_jobs: {
+        Row: {
+          alert_id: string | null
+          category: Database["public"]["Enums"]["notif_category"]
+          channel: Database["public"]["Enums"]["notif_channel"] | null
+          created_at: string | null
+          delivered_at: string | null
+          failed_at: string | null
+          failure_reason: string | null
+          id: string
+          idempotency_key: string | null
+          max_retries: number | null
+          parent_job_id: string | null
+          payload: Json
+          priority: Database["public"]["Enums"]["notif_priority"] | null
+          read_at: string | null
+          retry_count: number | null
+          scheduled_at: string | null
+          sent_at: string | null
+          status: Database["public"]["Enums"]["notif_status"] | null
+          template_id: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          alert_id?: string | null
+          category: Database["public"]["Enums"]["notif_category"]
+          channel?: Database["public"]["Enums"]["notif_channel"] | null
+          created_at?: string | null
+          delivered_at?: string | null
+          failed_at?: string | null
+          failure_reason?: string | null
+          id?: string
+          idempotency_key?: string | null
+          max_retries?: number | null
+          parent_job_id?: string | null
+          payload?: Json
+          priority?: Database["public"]["Enums"]["notif_priority"] | null
+          read_at?: string | null
+          retry_count?: number | null
+          scheduled_at?: string | null
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["notif_status"] | null
+          template_id?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          alert_id?: string | null
+          category?: Database["public"]["Enums"]["notif_category"]
+          channel?: Database["public"]["Enums"]["notif_channel"] | null
+          created_at?: string | null
+          delivered_at?: string | null
+          failed_at?: string | null
+          failure_reason?: string | null
+          id?: string
+          idempotency_key?: string | null
+          max_retries?: number | null
+          parent_job_id?: string | null
+          payload?: Json
+          priority?: Database["public"]["Enums"]["notif_priority"] | null
+          read_at?: string | null
+          retry_count?: number | null
+          scheduled_at?: string | null
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["notif_status"] | null
+          template_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_jobs_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "smart_alerts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_jobs_parent_job_id_fkey"
+            columns: ["parent_job_id"]
+            isOneToOne: false
+            referencedRelation: "notification_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_jobs_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "notification_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_preferences: {
+        Row: {
+          category: Database["public"]["Enums"]["notif_category"]
+          channel: Database["public"]["Enums"]["notif_channel"]
+          created_at: string | null
+          enabled: boolean | null
+          id: string
+          max_per_day: number | null
+          max_per_week: number | null
+          quiet_hours_end: string | null
+          quiet_hours_start: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["notif_category"]
+          channel: Database["public"]["Enums"]["notif_channel"]
+          created_at?: string | null
+          enabled?: boolean | null
+          id?: string
+          max_per_day?: number | null
+          max_per_week?: number | null
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["notif_category"]
+          channel?: Database["public"]["Enums"]["notif_channel"]
+          created_at?: string | null
+          enabled?: boolean | null
+          id?: string
+          max_per_day?: number | null
+          max_per_week?: number | null
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notification_templates: {
+        Row: {
+          body: string
+          body_ar: string | null
+          category: Database["public"]["Enums"]["notif_category"]
+          channel: Database["public"]["Enums"]["notif_channel"]
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          subject: string | null
+          updated_at: string | null
+          user_id: string
+          variables: Json | null
+          variant_of: string | null
+        }
+        Insert: {
+          body: string
+          body_ar?: string | null
+          category: Database["public"]["Enums"]["notif_category"]
+          channel: Database["public"]["Enums"]["notif_channel"]
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          subject?: string | null
+          updated_at?: string | null
+          user_id: string
+          variables?: Json | null
+          variant_of?: string | null
+        }
+        Update: {
+          body?: string
+          body_ar?: string | null
+          category?: Database["public"]["Enums"]["notif_category"]
+          channel?: Database["public"]["Enums"]["notif_channel"]
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          subject?: string | null
+          updated_at?: string | null
+          user_id?: string
+          variables?: Json | null
+          variant_of?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_templates_variant_of_fkey"
+            columns: ["variant_of"]
+            isOneToOne: false
+            referencedRelation: "notification_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_promises: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string
+          id: string
+          notes: string | null
+          person_id: string
+          promise_date: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by: string
+          id?: string
+          notes?: string | null
+          person_id: string
+          promise_date: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string
+          id?: string
+          notes?: string | null
+          person_id?: string
+          promise_date?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_promises_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "people"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      smart_alerts: {
+        Row: {
+          body: string | null
+          channel: Database["public"]["Enums"]["notif_channel"]
+          completed_at: string | null
+          created_at: string
+          due_at: string | null
+          id: string
+          notification_job_id: string | null
+          person_id: string | null
+          priority: Database["public"]["Enums"]["notif_priority"]
+          source_id: string
+          source_type: Database["public"]["Enums"]["alert_source"]
+          status: Database["public"]["Enums"]["alert_status"]
+          title: string
+          transaction_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          channel?: Database["public"]["Enums"]["notif_channel"]
+          completed_at?: string | null
+          created_at?: string
+          due_at?: string | null
+          id?: string
+          notification_job_id?: string | null
+          person_id?: string | null
+          priority?: Database["public"]["Enums"]["notif_priority"]
+          source_id: string
+          source_type: Database["public"]["Enums"]["alert_source"]
+          status?: Database["public"]["Enums"]["alert_status"]
+          title: string
+          transaction_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          channel?: Database["public"]["Enums"]["notif_channel"]
+          completed_at?: string | null
+          created_at?: string
+          due_at?: string | null
+          id?: string
+          notification_job_id?: string | null
+          person_id?: string | null
+          priority?: Database["public"]["Enums"]["notif_priority"]
+          source_id?: string
+          source_type?: Database["public"]["Enums"]["alert_source"]
+          status?: Database["public"]["Enums"]["alert_status"]
+          title?: string
+          transaction_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "smart_alerts_notification_job_id_fkey"
+            columns: ["notification_job_id"]
+            isOneToOne: false
+            referencedRelation: "notification_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "smart_alerts_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "people"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "smart_alerts_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transaction_notes: {
+        Row: {
+          author: string
+          body: string
+          created_at: string
+          has_reminder: boolean
+          id: string
+          matched_text: string | null
+          parsed_due_at: string | null
+          person_id: string | null
+          transaction_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          author?: string
+          body: string
+          created_at?: string
+          has_reminder?: boolean
+          id?: string
+          matched_text?: string | null
+          parsed_due_at?: string | null
+          person_id?: string | null
+          transaction_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          author?: string
+          body?: string
+          created_at?: string
+          has_reminder?: boolean
+          id?: string
+          matched_text?: string | null
+          parsed_due_at?: string | null
+          person_id?: string | null
+          transaction_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transaction_notes_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "people"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transaction_notes_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+    }
     Views: {
       view_person_balances: {
         Row: {
@@ -796,9 +1409,97 @@ export type Database = {
           total_owe: number
         }[]
       }
+      rpc_calculate_risk_score: {
+        Args: {
+          p_person_id: string
+        }
+        Returns: {
+          score: number
+          classification: string
+          factors: Json
+        }[]
+      }
+      rpc_get_high_risk_customers: {
+        Args: {
+          p_user_id: string
+          p_limit?: number
+        }
+        Returns: {
+          person_id: string
+          person_name: string
+          score: number
+          classification: string
+          outstanding_debt: number
+          overdue_count: number
+          broken_promises: number
+        }[]
+      }
+      rpc_create_promise: {
+        Args: {
+          p_user_id: string
+          p_person_id: string
+          p_amount: number
+          p_promise_date: string
+          p_notes?: string
+        }
+        Returns: string
+      }
+      rpc_cancel_promise: {
+        Args: {
+          p_promise_id: string
+        }
+        Returns: boolean
+      }
+      rpc_get_pending_promises: {
+        Args: {
+          p_person_id: string
+        }
+        Returns: {
+          id: string
+          amount: number
+          promise_date: string
+          notes: string
+          status: string
+          created_at: string
+        }[]
+      }
+      rpc_get_broken_promises: {
+        Args: {
+          p_user_id: string
+        }
+        Returns: {
+          id: string
+          person_id: string
+          person_name: string
+          amount: number
+          promise_date: string
+          created_at: string
+        }[]
+      }
     }
     Enums: {
-      [_ in never]: never
+      alert_source: "note" | "reminder" | "followup" | "transaction" | "overdue"
+      alert_status: "pending" | "triggered" | "done" | "dismissed" | "snoozed"
+      followup_channel: "whatsapp" | "call" | "email" | "note" | "other"
+      notif_category:
+        | "reminder"
+        | "overdue"
+        | "payment_received"
+        | "payment_sent"
+        | "recurring"
+        | "backup"
+        | "system"
+        | "marketing"
+      notif_channel: "in_app" | "push" | "email" | "sms"
+      notif_priority: "critical" | "high" | "normal" | "low"
+      notif_status:
+        | "pending"
+        | "queued"
+        | "sent"
+        | "delivered"
+        | "read"
+        | "failed"
+        | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
