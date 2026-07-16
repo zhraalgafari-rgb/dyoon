@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Wallet, ArrowLeft } from "lucide-react";
+import { Wallet, ArrowLeft, Eye, EyeOff, Mail } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({ component: AuthPage });
@@ -15,10 +15,17 @@ export const Route = createFileRoute("/auth")({ component: AuthPage });
 function AuthPage() {
   const { user, signIn, signUp, loading } = useAuth();
   const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const [busy, setBusy] = useState(false);
   const [googleBusy, setGoogleBusy] = useState(false);
+  const [forgotMode, setForgotMode] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotBusy, setForgotBusy] = useState(false);
+  const [forgotSent, setForgotSent] = useState(false);
   const googleClicking = useRef(false);
 
   useEffect(() => {
@@ -31,7 +38,9 @@ function AuthPage() {
       return;
     }
     setBusy(true);
-    const { error } = mode === "in" ? await signIn(email, password) : await signUp(email, password);
+    const { error } = mode === "in"
+      ? await signIn(email, password, rememberMe)
+      : await signUp(email, password);
     setBusy(false);
     if (error) toast.error(error);
     else if (mode === "up") toast.success("تم إنشاء الحساب! يمكنك تسجيل الدخول الآن.");
@@ -39,7 +48,6 @@ function AuthPage() {
   };
 
   const handleGoogle = async () => {
-    // منع الضغط المزدوج الذي يُسبب خطأ "Error creating flow state"
     if (googleClicking.current) return;
     googleClicking.current = true;
     setGoogleBusy(true);
@@ -59,7 +67,6 @@ function AuthPage() {
         setGoogleBusy(false);
         googleClicking.current = false;
       }
-      // في حالة النجاح يتم التوجيه إلى Google فلا نُعيد الحالة
     } catch {
       toast.error("حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.");
       setGoogleBusy(false);
@@ -67,6 +74,92 @@ function AuthPage() {
     }
   };
 
+  const handleForgotPassword = async () => {
+    if (!forgotEmail) {
+      toast.error("أدخل بريدك الإلكتروني أولاً");
+      return;
+    }
+    setForgotBusy(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
+      redirectTo: `${window.location.origin}/auth/callback`,
+    });
+    setForgotBusy(false);
+    if (error) {
+      toast.error("تعذّر الإرسال: " + error.message);
+    } else {
+      setForgotSent(true);
+    }
+  };
+
+  // ─── شاشة نسيت كلمة السر ────────────────────────────────────────────
+  if (forgotMode) {
+    return (
+      <div className="min-h-screen bg-gradient-hero flex items-center justify-center px-4 py-10">
+        <div className="w-full max-w-md">
+          <button
+            onClick={() => { setForgotMode(false); setForgotSent(false); setForgotEmail(""); }}
+            className="flex items-center gap-2 text-white/90 hover:text-white mb-6 text-sm"
+          >
+            <ArrowLeft className="size-4 rotate-180" /> العودة لتسجيل الدخول
+          </button>
+
+          <div className="text-center mb-6">
+            <div className="inline-flex size-16 items-center justify-center rounded-2xl bg-white/15 backdrop-blur mb-3 shadow-glow">
+              <Mail className="size-8 text-white" />
+            </div>
+            <h1 className="text-2xl font-bold text-white">إعادة تعيين كلمة المرور</h1>
+            <p className="text-white/80 text-sm mt-1">سنرسل لك رابطاً على بريدك الإلكتروني</p>
+          </div>
+
+          <Card className="p-6 shadow-elevated">
+            {forgotSent ? (
+              <div className="text-center py-4">
+                <div className="size-14 rounded-full bg-success/15 flex items-center justify-center mx-auto mb-3">
+                  <Mail className="size-7 text-success" />
+                </div>
+                <p className="font-bold text-foreground mb-1">تم الإرسال!</p>
+                <p className="text-sm text-muted-foreground">
+                  تحقّق من بريدك الإلكتروني واتّبع الرابط لإعادة تعيين كلمة المرور.
+                </p>
+                <Button
+                  className="mt-4 w-full bg-gradient-primary text-primary-foreground"
+                  onClick={() => { setForgotMode(false); setForgotSent(false); setForgotEmail(""); }}
+                >
+                  العودة لتسجيل الدخول
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="forgot-email">البريد الإلكتروني</Label>
+                  <Input
+                    id="forgot-email"
+                    type="email"
+                    dir="ltr"
+                    value={forgotEmail}
+                    onChange={(e) => setForgotEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    onKeyDown={(e) => e.key === "Enter" && handleForgotPassword()}
+                  />
+                </div>
+                <Button
+                  className="w-full bg-gradient-primary text-primary-foreground shadow-glow"
+                  disabled={forgotBusy}
+                  onClick={handleForgotPassword}
+                >
+                  {forgotBusy ? (
+                    <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                  ) : "إرسال رابط الاستعادة"}
+                </Button>
+              </div>
+            )}
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── شاشة تسجيل الدخول الرئيسية ─────────────────────────────────────
   return (
     <div className="min-h-screen bg-gradient-hero flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-md">
@@ -83,6 +176,7 @@ function AuthPage() {
         </div>
 
         <Card className="p-6 shadow-elevated">
+          {/* Google */}
           <Button
             type="button"
             variant="outline"
@@ -110,24 +204,88 @@ function AuthPage() {
               <TabsTrigger value="in">تسجيل الدخول</TabsTrigger>
               <TabsTrigger value="up">إنشاء حساب</TabsTrigger>
             </TabsList>
+
             <div className="space-y-3">
               <div className="space-y-1.5">
                 <Label htmlFor="email">البريد الإلكتروني</Label>
-                <Input id="email" type="email" dir="ltr" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
+                <Input
+                  id="email"
+                  type="email"
+                  dir="ltr"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  onKeyDown={(e) => e.key === "Enter" && handle("in")}
+                />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="pw">كلمة المرور</Label>
-                <Input id="pw" type="password" dir="ltr" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
+                <div className="relative">
+                  <Input
+                    id="pw"
+                    type={showPassword ? "text" : "password"}
+                    dir="ltr"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="pe-10"
+                    onKeyDown={(e) => e.key === "Enter" && handle("in")}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 end-0 flex items-center px-3 text-muted-foreground hover:text-foreground transition-colors"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                  </button>
+                </div>
               </div>
             </div>
-            <TabsContent value="in" className="mt-4">
-              <Button className="w-full bg-gradient-primary text-primary-foreground shadow-glow" disabled={busy} onClick={() => handle("in")}>
-                {busy ? "..." : "تسجيل الدخول"}
+
+            {/* تسجيل الدخول */}
+            <TabsContent value="in" className="mt-4 space-y-3">
+              {/* تذكرني + نسيت كلمة السر */}
+              <div className="flex items-center justify-between text-sm">
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="rounded border-border accent-primary size-4"
+                  />
+                  <span className="text-muted-foreground">تذكرني</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => { setForgotEmail(email); setForgotMode(true); }}
+                  className="text-primary hover:underline font-medium"
+                >
+                  نسيت كلمة المرور؟
+                </button>
+              </div>
+
+              <Button
+                className="w-full bg-gradient-primary text-primary-foreground shadow-glow"
+                disabled={busy}
+                onClick={() => handle("in")}
+              >
+                {busy ? (
+                  <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                ) : "تسجيل الدخول"}
               </Button>
             </TabsContent>
+
+            {/* إنشاء حساب */}
             <TabsContent value="up" className="mt-4">
-              <Button className="w-full bg-gradient-primary text-primary-foreground shadow-glow" disabled={busy} onClick={() => handle("up")}>
-                {busy ? "..." : "إنشاء حساب جديد"}
+              <Button
+                className="w-full bg-gradient-primary text-primary-foreground shadow-glow"
+                disabled={busy}
+                onClick={() => handle("up")}
+              >
+                {busy ? (
+                  <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                ) : "إنشاء حساب جديد"}
               </Button>
             </TabsContent>
           </Tabs>
