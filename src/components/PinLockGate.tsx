@@ -13,14 +13,7 @@ const AUTOLOCK_KEY = "daftarak.autolock.minutes";
 const LAST_ACTIVE_KEY = "daftarak.lastActive";
 const ATTEMPTS_KEY = "daftarak.pin.attempts";
 
-const profileCache = new Map<string, { pin_hash: string | null; onboarded: boolean | null }>();
-
-function getCachedProfile(userId: string) {
-  if (!profileCache.has(userId)) {
-    profileCache.set(userId, { pin_hash: null, onboarded: null });
-  }
-  return profileCache.get(userId)!;
-}
+import { getProfile } from "@/lib/profile";
 
 export function PinLockGate({ children }: { children: React.ReactNode }) {
   const { user, signOut } = useAuth();
@@ -42,15 +35,10 @@ export function PinLockGate({ children }: { children: React.ReactNode }) {
     if (!user) { setChecking(false); return; }
     let cancelled = false;
     (async () => {
-      const cache = getCachedProfile(user.id);
-      if (cache.pin_hash === null) {
-        const { data } = await supabase.from("profiles").select("pin_hash, onboarded").eq("user_id", user.id).maybeSingle();
-        cache.pin_hash = data?.pin_hash ?? null;
-        cache.onboarded = data?.onboarded ?? false;
-      }
+      const profile = await getProfile(user.id);
       if (cancelled) return;
-      setPinHash(cache.pin_hash);
-      if (cache.pin_hash && !isUnlocked()) setUnlocked(false);
+      setPinHash(profile.pin_hash);
+      if (profile.pin_hash && !isUnlocked()) setUnlocked(false);
       setChecking(false);
     })();
     return () => { cancelled = true; };

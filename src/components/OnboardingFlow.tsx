@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
+import { updateProfileCache } from "@/lib/profile";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -86,6 +87,8 @@ export function OnboardingFlow({ onDone }: Props) {
       }, { onConflict: "user_id" });
 
       if (profErr) throw new Error(profErr.message);
+
+      updateProfileCache(user.id, { onboarded: true });
 
       toast.success("جاهز للانطلاق! 🎉");
       onDone();

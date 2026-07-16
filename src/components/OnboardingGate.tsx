@@ -2,22 +2,7 @@ import { useEffect, useState, ReactNode } from "react";
 import { useAuth } from "@/lib/auth";
 import { OnboardingFlow } from "@/components/OnboardingFlow";
 
-const profileCache = new Map<string, { pin_hash: string | null; onboarded: boolean | null }>();
-
-export function setProfileCache(userId: string, data: { pin_hash?: string | null; onboarded?: boolean | null }) {
-  if (!profileCache.has(userId)) {
-    profileCache.set(userId, { pin_hash: null, onboarded: null });
-  }
-  const existing = profileCache.get(userId)!;
-  if (data.pin_hash !== undefined) existing.pin_hash = data.pin_hash;
-  if (data.onboarded !== undefined) existing.onboarded = data.onboarded;
-}
-
-export function getCachedOnboarding(userId: string): boolean | null {
-  const cached = profileCache.get(userId);
-  if (!cached) return null;
-  return cached.onboarded;
-}
+import { getProfile, updateProfileCache } from "@/lib/profile";
 
 export function OnboardingGate({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
@@ -25,26 +10,16 @@ export function OnboardingGate({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (loading || !user) { setNeeds(false); return; }
-    const cached = getCachedOnboarding(user.id);
-    if (cached !== null) {
-      setNeeds(!cached);
-      return;
-    }
+    
     let cancelled = false;
-    let timeout: ReturnType<typeof setTimeout>;
-    const waitForCache = () => {
-      timeout = setTimeout(() => {
-        if (cancelled) return;
-        const updated = getCachedOnboarding(user.id);
-        if (updated !== null) {
-          setNeeds(!updated);
-        } else {
-          waitForCache();
-        }
-      }, 50);
-    };
-    waitForCache();
-    return () => { cancelled = true; clearTimeout(timeout); };
+    (async () => {
+      const profile = await getProfile(user.id);
+      if (!cancelled) {
+        setNeeds(!profile.onboarded);
+      }
+    })();
+
+    return () => { cancelled = true; };
   }, [user, loading]);
 
   if (needs === null) return null;
