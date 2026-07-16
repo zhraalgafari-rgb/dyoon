@@ -403,10 +403,10 @@
 @media (max-width: 768px) {
 
   /* Disable page load animations on mobile (but keep dialog animations) */
-  .space-y-3.md\\:animate-in,
-  .space-y-4.md\\:animate-in,
-  .space-y-3.md\\:fade-in,
-  .space-y-4.md\\:fade-in {
+  [class*="space-y-3"][class*="animate-in"],
+  [class*="space-y-4"][class*="animate-in"],
+  [class*="space-y-3"][class*="fade-in"],
+  [class*="space-y-4"][class*="fade-in"] {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;
