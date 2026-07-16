@@ -18,7 +18,9 @@ function AuthPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [busy, setBusy] = useState(false);
   const [googleBusy, setGoogleBusy] = useState(false);
@@ -35,6 +37,10 @@ function AuthPage() {
   const handle = async (mode: "in" | "up") => {
     if (!email || password.length < 6) {
       toast.error("أدخل بريداً صحيحاً وكلمة مرور لا تقل عن 6 أحرف");
+      return;
+    }
+    if (mode === "up" && password !== confirmPassword) {
+      toast.error("كلمة المرور وتأكيدها غير متطابقتين");
       return;
     }
     setBusy(true);
@@ -277,7 +283,30 @@ function AuthPage() {
             </TabsContent>
 
             {/* إنشاء حساب */}
-            <TabsContent value="up" className="mt-4">
+            <TabsContent value="up" className="mt-4 space-y-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="confirm-pw">تأكيد كلمة المرور</Label>
+                <div className="relative">
+                  <Input
+                    id="confirm-pw"
+                    type={showConfirmPassword ? "text" : "password"}
+                    dir="ltr"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="pe-10"
+                    onKeyDown={(e) => e.key === "Enter" && handle("up")}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute inset-y-0 end-0 flex items-center px-3 text-muted-foreground hover:text-foreground transition-colors"
+                    tabIndex={-1}
+                  >
+                    {showConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                  </button>
+                </div>
+              </div>
               <Button
                 className="w-full bg-gradient-primary text-primary-foreground shadow-glow"
                 disabled={busy}
