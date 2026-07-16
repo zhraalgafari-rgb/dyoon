@@ -1,0 +1,7 @@
+node_modules/  
+.env  
+.output/  
+.kilo/  
+.lovable/  
+.tanstack/  
+.wrangler/ 

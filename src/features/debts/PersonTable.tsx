@@ -1,0 +1,233 @@
+import { Link } from "@tanstack/react-router";
+import { fmtMoney, fmtDate } from "@/lib/format";
+import type { PersonBalance } from "./types";
+import type { Person, PersonCurrencyBalance, Currency } from "@/hooks/useDashboardData";
+import { RowActions } from "@/components/common/RowActions";
+import { RiskScoreBadge } from "@/components/RiskScoreBadge";
+
+interface Props {
+  rows: {
+    person: Person;
+    balance: PersonBalance;
+    currencyBalances?: PersonCurrencyBalance[];
+    currencies?: Currency[];
+    riskScore?: { score: number; classification: string } | null;
+  }[];
+  onEdit?: (p: Person) => void;
+  onArchive?: (p: Person) => void;
+  onDelete?: (p: Person) => void;
+}
+
+/** Professional, colorful, dense table view of customers — multi-currency aware. */
+export function PersonTable({ rows, onEdit, onArchive, onDelete }: Props) {
+  const hasActions = !!(onEdit || onArchive || onDelete);
+  return (
+    <div className="rounded-lg border bg-card shadow-card overflow-hidden animate-in fade-in duration-200">
+      <div className="overflow-x-auto">
+        <table className="w-full text-xs md:text-sm border-collapse border border-border">
+          <thead className="bg-gradient-primary text-primary-foreground">
+            <tr className="[&>th]:px-2 [&>th]:py-1.5 md:[&>th]:px-3 md:[&>th]:py-2 [&>th]:font-bold [&>th]:text-right [&>th]:whitespace-nowrap [&>th]:border [&>th]:border-white/20 shadow-sm">
+              <th className="w-7 md:w-8 text-center">#</th>
+              <th>العميل</th>
+              <th className="hidden sm:table-cell">الهاتف</th>
+              <th className="text-center">معاملات</th>
+              <th className="text-left">له</th>
+              <th className="text-left">عليه</th>
+              <th className="text-left">الصافي</th>
+              <th className="text-center hidden xs:table-cell">آخر دفعة</th>
+              <th className="text-center hidden md:table-cell">التقييم</th>
+              {hasActions && <th className="text-center w-10 md:w-12">إجراء</th>}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, i) => {
+              const { person, balance, currencyBalances = [], currencies = [], riskScore } = row;
+              const displayRows = currencyBalances.length > 0 ? currencyBalances : null;
+
+              if (displayRows) {
+                // صف لكل عملة للعميل
+                return displayRows.map((b, bi) => {
+                  const curr = currencies.find((c) => c.id === b.currency_id);
+                  const sym = curr?.symbol ?? "";
+                  const isCredit = b.net >= 0;
+                  const settled = Math.abs(b.net) < 0.001;
+                  const zebra = i % 2 === 0 ? "bg-card" : "bg-secondary/40";
+                  const stateTint = settled
+                    ? ""
+                    : isCredit
+                      ? "border-r-2 border-r-success"
+                      : "border-r-2 border-r-danger";
+                  return (
+                    <tr
+                      key={`${person.id}-${b.currency_id}`}
+                      className={`${zebra} ${stateTint} hover:bg-primary/5 transition-colors [&>td]:border [&>td]:border-border`}
+                    >
+                      <td className="px-2 py-1.5 md:px-3 md:py-2 text-muted-foreground tabular-nums text-center border-l-0">
+                        {bi === 0 ? i + 1 : ""}
+                      </td>
+                      <td className="px-2 py-1.5 md:px-3 md:py-2">
+                        {bi === 0 ? (
+                          <Link
+                            to="/app/person/$id"
+                            params={{ id: person.id }}
+                            className="font-bold text-foreground hover:text-primary truncate block max-w-[110px] md:max-w-[160px] lg:max-w-[200px]"
+                          >
+                            {person.name}
+                          </Link>
+                        ) : (
+                          <span className="text-muted-foreground text-xs pr-2">↳</span>
+                        )}
+                      </td>
+                      <td
+                        className="px-2 py-1.5 md:px-3 md:py-2 hidden sm:table-cell text-muted-foreground tabular-nums"
+                        dir="ltr"
+                      >
+                        {bi === 0 ? (
+                          person.phone || "—"
+                        ) : (
+                          <span className="inline-block px-1 py-0.5 rounded bg-muted text-xs font-bold border">
+                            {curr?.name ?? sym}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-2 py-1.5 md:px-3 md:py-2 text-center tabular-nums text-muted-foreground">
+                        {bi === 0 ? balance.count : ""}
+                      </td>
+                      <td className="px-2 py-1.5 md:px-3 md:py-2 text-left tabular-nums font-semibold text-success bg-success/5">
+                        {b.totalCredit > 0 ? (
+                          <>
+                            {fmtMoney(b.totalCredit)}{" "}
+                            <span className="opacity-60 text-xs">{sym}</span>
+                          </>
+                        ) : (
+                          "—"
+                        )}
+                      </td>
+                      <td className="px-2 py-1.5 md:px-3 md:py-2 text-left tabular-nums font-semibold text-danger bg-danger/5">
+                        {b.totalDebit > 0 ? (
+                          <>
+                            {fmtMoney(b.totalDebit)}{" "}
+                            <span className="opacity-60 text-xs">{sym}</span>
+                          </>
+                        ) : (
+                          "—"
+                        )}
+                      </td>
+                      <td className="px-2 py-1.5 md:px-3 md:py-2 text-left">
+                        {settled ? (
+                          <span className="inline-block px-1.5 py-0.5 rounded-full bg-secondary text-muted-foreground text-xs font-bold border border-border/50">
+                            مسوّى
+                          </span>
+                        ) : (
+                          <span
+                            className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-xs font-black tabular-nums ${isCredit ? "bg-success-soft text-success ring-1 ring-success/30" : "bg-danger-soft text-danger ring-1 ring-danger/30"}`}
+                          >
+                            {isCredit ? "" : "-"}
+                            {fmtMoney(Math.abs(b.net))}
+                            <span className="opacity-70 text-xs">{sym}</span>
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-2 py-1.5 md:px-3 md:py-2 text-center hidden xs:table-cell text-muted-foreground tabular-nums">
+                        {bi === 0 && b.lastDate ? fmtDate(new Date(b.lastDate).toISOString()) : "—"}
+                      </td>
+                      <td className="px-2 py-1.5 md:px-3 md:py-2 text-center hidden md:table-cell">
+                        {bi === 0 && riskScore ? (
+                          <RiskScoreBadge score={riskScore.score} classification={riskScore.classification} size="sm" showLabel={false} />
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </td>
+                      {hasActions && (
+                        <td className="px-1 py-1 md:px-2 md:py-2 text-center border-r-0">
+                          {bi === 0 ? (
+                            <RowActions
+                              onEdit={onEdit ? () => onEdit(person) : undefined}
+                              onArchive={onArchive ? () => onArchive(person) : undefined}
+                              onDelete={onDelete ? () => onDelete(person) : undefined}
+                            />
+                          ) : null}
+                        </td>
+                      )}
+                    </tr>
+                  );
+                });
+              }
+
+              // إذا لم يكن لديه أرصدة (شخص جديد)
+              const zebra = i % 2 === 0 ? "bg-card" : "bg-secondary/40";
+              return (
+                <tr
+                  key={person.id}
+                  className={`${zebra} hover:bg-primary/5 transition-colors [&>td]:border [&>td]:border-border`}
+                >
+                  <td className="px-2 py-1.5 md:px-3 md:py-2 text-muted-foreground tabular-nums text-center border-l-0">
+                    {i + 1}
+                  </td>
+                  <td className="px-2 py-1.5 md:px-3 md:py-2">
+                    <Link
+                      to="/app/person/$id"
+                      params={{ id: person.id }}
+                      className="font-bold text-foreground hover:text-primary truncate block max-w-[110px] md:max-w-[160px] lg:max-w-[200px]"
+                    >
+                      {person.name}
+                    </Link>
+                  </td>
+                  <td
+                    className="px-2 py-1.5 md:px-3 md:py-2 hidden sm:table-cell text-muted-foreground tabular-nums"
+                    dir="ltr"
+                  >
+                    {person.phone || "—"}
+                  </td>
+                  <td className="px-2 py-1.5 md:px-3 md:py-2 text-center tabular-nums text-muted-foreground">
+                    0
+                  </td>
+                  <td className="px-2 py-1.5 md:px-3 md:py-2 text-left tabular-nums text-muted-foreground">
+                    —
+                  </td>
+                  <td className="px-2 py-1.5 md:px-3 md:py-2 text-left tabular-nums text-muted-foreground">
+                    —
+                  </td>
+                  <td className="px-2 py-1.5 md:px-3 md:py-2 text-left">
+                    <span className="inline-block px-2 py-1 rounded-lg bg-secondary text-muted-foreground text-xs font-bold border border-border/50">
+                      جديد
+                    </span>
+                  </td>
+                  <td className="px-2 py-1.5 md:px-3 md:py-2 text-center hidden xs:table-cell text-muted-foreground tabular-nums">
+                    —
+                  </td>
+                  <td className="px-2 py-1.5 md:px-3 md:py-2 text-center hidden md:table-cell">
+                    {riskScore ? (
+                      <RiskScoreBadge score={riskScore.score} classification={riskScore.classification} size="sm" showLabel={false} />
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
+                  </td>
+                  {hasActions && (
+                    <td className="px-1 py-1 md:px-2 md:py-2 text-center border-r-0">
+                      <RowActions
+                        onEdit={onEdit ? () => onEdit(person) : undefined}
+                        onArchive={onArchive ? () => onArchive(person) : undefined}
+                        onDelete={onDelete ? () => onDelete(person) : undefined}
+                      />
+                    </td>
+                  )}
+                </tr>
+              );
+            })}
+            {rows.length === 0 && (
+              <tr>
+                <td
+                  colSpan={hasActions ? 10 : 9}
+                  className="text-center py-8 text-muted-foreground text-xs md:text-sm bg-secondary/20"
+                >
+                  لا توجد بيانات
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
